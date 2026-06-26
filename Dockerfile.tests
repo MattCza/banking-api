@@ -1,0 +1,12 @@
+FROM maven:3.9.9-eclipse-temurin-21
+WORKDIR /build
+
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+COPY pom.xml .
+COPY app-backend/pom.xml app-backend/pom.xml
+COPY testing-framework/pom.xml testing-framework/pom.xml
+COPY app-backend/src app-backend/src
+COPY testing-framework/src testing-framework/src
+
+CMD sh -c "until curl -fsS http://app-backend:8080/actuator/health; do echo 'Waiting for app-backend...'; sleep 5; done; mvn -pl testing-framework -am test -Denv=docker"
