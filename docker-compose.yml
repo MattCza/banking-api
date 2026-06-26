@@ -3,7 +3,6 @@ version: '3.8'
 services:
   postgres-db:
     image: postgres:16-alpine
-    container_name: money-banking-postgres
     ports:
       - "5432:5432"
     environment:
@@ -22,7 +21,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.backend
-    container_name: money-banking-app
     ports:
       - "8080:8080"
     environment:
@@ -38,7 +36,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.tests
-    container_name: money-banking-tests
     depends_on:
       app-backend:
         condition: service_started
