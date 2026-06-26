@@ -1,4 +1,4 @@
-package com.bank.dto;
+package com.bank.dto.account;
 
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Email;

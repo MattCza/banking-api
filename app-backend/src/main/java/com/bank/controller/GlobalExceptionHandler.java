@@ -1,6 +1,6 @@
 package com.bank.controller;
 
-import com.bank.dto.ErrorResponse;
+import com.bank.dto.error.ErrorResponse;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

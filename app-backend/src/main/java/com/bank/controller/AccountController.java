@@ -1,7 +1,7 @@
 package com.bank.controller;
 
-import com.bank.dto.AccountResponse;
-import com.bank.dto.CreateAccountRequest;
+import com.bank.dto.account.AccountResponse;
+import com.bank.dto.account.CreateAccountRequest;
 import com.bank.model.Account;
 import com.bank.service.AccountService;
 import jakarta.validation.Valid;

@@ -1,6 +1,6 @@
 package com.bank.service;
 
-import com.bank.dto.CreateAccountRequest;
+import com.bank.dto.account.CreateAccountRequest;
 import com.bank.exception.AccountNotFoundException;
 import com.bank.exception.DuplicateEmailException;
 import com.bank.model.Account;

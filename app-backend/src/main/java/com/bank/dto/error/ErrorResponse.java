@@ -1,4 +1,4 @@
-package com.bank.dto;
+package com.bank.dto.error;
 
 import java.util.Map;
 
