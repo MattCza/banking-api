@@ -11,7 +11,7 @@ public class AccountClient extends BaseClient {
 
     public Response createAccount(CreateAccountRequest payload) {
         return given()
-                .spec(getRequestSpecification())
+                .spec(getAuthenticatedRequestSpecification())
                 .body(payload)
                 .when()
                 .post(ACCOUNTS_ENDPOINT);
@@ -19,7 +19,7 @@ public class AccountClient extends BaseClient {
 
     public Response getAccountById(Long accountId) {
         return given()
-                .spec(getRequestSpecification())
+                .spec(getAuthenticatedRequestSpecification())
                 .pathParam("id", accountId)
                 .when()
                 .get(ACCOUNTS_ENDPOINT + "/{id}");
@@ -27,7 +27,7 @@ public class AccountClient extends BaseClient {
 
     public Response deleteAccountById(Long accountId) {
         return given()
-                .spec(getRequestSpecification())
+                .spec(getAuthenticatedRequestSpecification())
                 .pathParam("id", accountId)
                 .when()
                 .delete(ACCOUNTS_ENDPOINT + "/{id}");

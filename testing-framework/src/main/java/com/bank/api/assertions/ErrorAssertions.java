@@ -1,7 +1,6 @@
 package com.bank.api.assertions;
 
 import com.bank.api.dto.response.ErrorResponse;
-import io.restassured.response.Response;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -10,37 +9,49 @@ public final class ErrorAssertions {
     private ErrorAssertions() {
     }
 
-    public static void assertDuplicateEmailConflict(ErrorResponse actual) {
+    private static void assertError(ErrorResponse actual, int expectedStatus, String expectedError, String expectedMessage) {
         assertThat(actual.status())
-                .isEqualTo(409);
+                .as("Status code")
+                .isEqualTo(expectedStatus);
 
         assertThat(actual.error())
-                .isEqualTo("CONFLICT");
+                .as("Error type")
+                .isEqualTo(expectedError);
 
         assertThat(actual.message())
-                .contains("already exists.");
-
-        assertThat(actual.validationErrors())
-                .isEmpty();
+                .as("Error message")
+                .contains(expectedMessage);
     }
 
     public static void assertInvalidRequestFields(ErrorResponse actual, String... expectedFields) {
-        assertThat(actual.validationErrors())
-                .containsOnlyKeys(expectedFields);
+        assertThat(actual.validationErrors()).containsOnlyKeys(expectedFields);
     }
 
-    public static void assertNotFoundIdRequest(ErrorResponse actual) {
-        assertThat(actual.status())
-                .isEqualTo(404);
+    public static void assertConflict(ErrorResponse actual) {
+        assertError(actual, 409, "CONFLICT","already exists.");
+        assertThat(actual.validationErrors()).isEmpty();
+    }
 
-        assertThat(actual.error())
-                .isEqualTo("NOT_FOUND");
+    public static void assertNotFound(ErrorResponse actual) {
+        assertError(actual, 404, "NOT_FOUND","not found");
+        assertThat(actual.validationErrors()).isEmpty();
+    }
 
-        assertThat(actual.message())
-                .contains("not found");
+    public static void assertUnauthorized(ErrorResponse actual) {
+        assertError(actual, 401, "UNAUTHORIZED","Invalid credentials");
+        assertThat(actual.validationErrors()).isEmpty();
+    }
 
-        assertThat(actual.validationErrors())
-                .isEmpty();
+    public static void assertBadRequest(ErrorResponse actual) {
+        assertError(actual, 400, "BAD_REQUEST","Validation failed");
+    }
+
+    public static void assertMalformedJson(ErrorResponse actual) {
+        assertError(actual, 400, "BAD_REQUEST","Malformed JSON request");
+    }
+
+    public static void assertUnsupportedMediaType(ErrorResponse actual) {
+        assertError(actual, 415, "UNSUPPORTED_MEDIA_TYPE","Unsupported Content-Type");
     }
 
 

@@ -3,9 +3,9 @@ WORKDIR /build
 
 COPY pom.xml .
 COPY app-backend/pom.xml app-backend/pom.xml
-COPY testing-framework/pom.xml testing-framework/pom.xml
+
+RUN mvn -pl app-backend -am dependency:go-offline
 COPY app-backend/src app-backend/src
-COPY testing-framework/src testing-framework/src
 
 RUN mvn -pl app-backend -am clean package -DskipTests
 

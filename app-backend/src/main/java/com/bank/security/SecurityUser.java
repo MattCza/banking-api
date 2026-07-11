@@ -1,21 +1,22 @@
 package com.bank.security;
 
 import com.bank.model.User;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
 
+@RequiredArgsConstructor
+@Getter
 public class SecurityUser implements UserDetails {
     private final User user;
 
-    public SecurityUser(User user) {
-        this.user = user;
-    }
-
     @Override
-    public Collection<? extends SimpleGrantedAuthority> getAuthorities() {
+    public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
     }
 

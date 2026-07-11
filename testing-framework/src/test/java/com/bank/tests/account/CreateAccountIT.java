@@ -19,7 +19,7 @@ import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CreateAccountAPITest {
+public class CreateAccountIT {
 
     private final AccountClient accountClient = new AccountClient();
 
@@ -56,7 +56,7 @@ public class CreateAccountAPITest {
 
         // Get ErrorResponse from duplicateResponse
         ErrorResponse error = errorResponse.as(ErrorResponse.class);
-        ErrorAssertions.assertDuplicateEmailConflict(error);
+        ErrorAssertions.assertConflict(error);
     }
 
     @Test
@@ -266,7 +266,7 @@ public class CreateAccountAPITest {
         ResponseAssertions.assertStatus(response, 404);
 
         ErrorResponse errorResponse = response.as(ErrorResponse.class);
-        ErrorAssertions.assertNotFoundIdRequest(errorResponse);
+        ErrorAssertions.assertNotFound(errorResponse);
     }
 
     @Test
@@ -293,7 +293,7 @@ public class CreateAccountAPITest {
         ResponseAssertions.assertStatus(response, 404);
 
         ErrorResponse errorResponse = response.as(ErrorResponse.class);
-        ErrorAssertions.assertNotFoundIdRequest(errorResponse);
+        ErrorAssertions.assertNotFound(errorResponse);
     }
 }
 

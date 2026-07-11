@@ -107,9 +107,29 @@
                             <goal>repackage</goal>
                         </goals>
                     </execution>
+
+                    <execution>
+                        <id>pre-integration-test</id>
+                        <goals>
+                            <goal>start</goal>
+                        </goals>
+                    </execution>
+
+                    <execution>
+                        <id>post-integration-test</id>
+                        <goals>
+                            <goal>stop</goal>
+                        </goals>
+                    </execution>
                 </executions>
                 <configuration>
                     <mainClass>com.bank.BankingApplication</mainClass>
+                    <profiles>
+                        <profile>test</profile>
+                    </profiles>
+                    <jvmArguments>
+                        -Dspring.profiles.active=test
+                    </jvmArguments>
                 </configuration>
             </plugin>
         </plugins>

@@ -31,9 +31,13 @@ public class AccountService {
         try {
             return accountRepository.saveAndFlush(account);
         } catch (DataIntegrityViolationException ex) {
-            throw new DuplicateEmailException("An account with email '" + normalizedEmail + "' already exists.");
+            if (accountRepository.existsByEmail(normalizedEmail)) {
+                throw new DuplicateEmailException("An account with email '" + normalizedEmail + "' already exists.");
+            }
+            throw ex;
         }
     }
+
 
     public Account getAccountById(Long id) {
         return accountRepository.findById(id)

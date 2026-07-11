@@ -1,0 +1,15 @@
+.git
+.github
+
+.idea
+.vscode
+
+**/target
+
+testing-framework
+
+README.md
+
+docker-compose.log
+
+*.iml

@@ -34,7 +34,7 @@ pipeline {
 
         stage('Run API Tests') {
             steps {
-                bat 'mvn -pl testing-framework -am test -Denv=local'
+                bat 'mvn -pl testing-framework -am verify -Denv=local'
             }
         }
     }
@@ -42,9 +42,10 @@ pipeline {
     post {
         always {
             bat 'docker compose logs --no-color > docker-compose.log || exit /b 0'
-            junit allowEmptyResults: true, testResults: 'testing-framework/target/surefire-reports/*.xml'
-            archiveArtifacts allowEmptyArchive: true, artifacts: 'docker-compose.log,testing-framework/target/surefire-reports/*'
+            junit testResults: 'testing-framework/target/surefire-reports/*.xml'
+            archiveArtifacts artifacts: 'docker-compose.log,testing-framework/target/surefire-reports/*', fingerprint: true
             bat 'docker compose down -v --remove-orphans || exit /b 0'
+            cleanWs()
         }
     }
 }
