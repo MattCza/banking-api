@@ -1,17 +1,19 @@
 ## Authentication:
 ### POST /api/v1/auth/login
 
-| Scenario | Priority | Automated | Status  |
-|----------|----------|---------|---------|
-| Valid login | Critical | ✅ | DONE    |
-| Wrong password | Critical | ✅ | DONE |
-| Wrong username | Critical | ✅ | DONE |
-| Username null | High | ✅ | DONE |
-| Password null | High | ✅ | DONE |
-| Empty request | High | ✅ | DONE |
-| Invalid JSON | Medium | ✅ | DONE |
+| Scenario             | Priority | Automated | Status  |
+|----------------------|----------|---------|---------|
+| Valid login          | Critical | ✅ | DONE    |
+| Invalid username     | Critical | ✅ | DONE |
+| Invalid password     | Critical | ✅ | DONE |
+| Blank username       | High | ✅ | DONE |
+| Blank password       | High | ✅ | DONE |
+| Username null        | High | ✅ | DONE |
+| Password null        | High | ✅ | DONE |
+| Empty request body   | High | ✅ | DONE |
+| Malformed JSON       | Medium | ✅ | DONE |
 | Missing Content-Type | Medium | ✅ | DONE |
-| Wrong Content-Type | Medium | ❌ | Planned |
+| Wrong Content-Type   | Medium | ✅ | DONE |
 
 ## Accounts:
 

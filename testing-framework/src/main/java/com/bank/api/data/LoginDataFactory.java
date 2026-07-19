@@ -22,9 +22,18 @@ public class LoginDataFactory {
         return new LoginRequest("admin", "admin123");
     }
 
+    public static LoginRequest blankUsername() {
+        return new LoginRequest("", "admin123");
+    }
+
+    public static LoginRequest blankPassword() {
+        return new LoginRequest("admin", "");
+    }
+
     public static LoginRequest nullUsername() {
         return new LoginRequest(null, "admin123");
     }
 
     public static LoginRequest nullPassword() { return new LoginRequest("admin1", null);}
+
 }
