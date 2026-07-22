@@ -62,7 +62,7 @@ public class CreateAccountIT {
     @Test
     @DisplayName("Parallel - Should fail to create an account when the email address already exists")
     void shouldReturn409Conflict_Parallel_WhenParallelEmailIsDuplicate() throws Exception {
-        int numberOfRequests = 5;
+        int numberOfRequests = 10;
 
         CreateAccountRequest payload = AccountDataFactory.validAccount().build();
 
@@ -98,7 +98,13 @@ public class CreateAccountIT {
                     .sorted()
                     .toList();
 
-            assertThat(statuses).containsExactly(201, 409, 409, 409, 409);
+//            assertThat(statuses).containsExactly(201, 409, 409, 409, 409);
+            assertThat(statuses).hasSize(numberOfRequests)
+                    .startsWith(201)
+                    .containsOnly(201, 409)
+                    .filteredOn(status -> status == 201)
+                    .hasSize(1);
+
 
         } finally {
             executor.shutdown();

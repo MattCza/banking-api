@@ -37,9 +37,7 @@ public class CreateAccountRequestBuilder {
     }
 
     private static BigDecimal randomBalance(double min, double max) {
-
         double randomDouble = FAKER.number().randomDouble(2, (long) min, (long) max);
-
         return BigDecimal.valueOf(randomDouble).setScale(2, RoundingMode.HALF_UP);
     }
 }

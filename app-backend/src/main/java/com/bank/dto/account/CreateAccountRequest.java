@@ -11,6 +11,8 @@ import org.hibernate.validator.constraints.Length;
 import java.math.BigDecimal;
 
 public record CreateAccountRequest(
+
+        // Validation
         @NotBlank(message = "Owner name cannot be empty")
         @Length(min = 3, max = 50, message = "Owner name must be between 3 and 50 characters")
         String ownerName,

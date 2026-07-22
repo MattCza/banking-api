@@ -25,17 +25,24 @@ public class AccountService {
         Account account = new Account(
                 request.ownerName().trim(),
                 normalizedEmail,
-                request.initialBalance()
-        );
+                request.initialBalance());
 
         try {
             return accountRepository.saveAndFlush(account);
         } catch (DataIntegrityViolationException ex) {
-            if (accountRepository.existsByEmail(normalizedEmail)) {
+
+//            if (accountRepository.existsByEmail(normalizedEmail)) {
                 throw new DuplicateEmailException("An account with email '" + normalizedEmail + "' already exists.");
-            }
-            throw ex;
+//            }
+//            throw ex;
         }
+
+        // Po saveAndFlush() które wali się:
+        // - Transakcja jest oznaczona rollback-only
+        // - Sesja Hibernate ma w sobie "dirty" encję z null id
+        // - Baza odrzuciła INSERT, ale encja jest wciąż w sesji!
+        // Hibernate: "O, SELECT! Muszę najpierw auto-flush!"
+        // Próbuje flushować dirty encję → null id → AssertionFailure
     }
 
 
