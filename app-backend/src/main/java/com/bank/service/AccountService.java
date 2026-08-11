@@ -6,8 +6,11 @@ import com.bank.exception.DuplicateEmailException;
 import com.bank.model.Account;
 import com.bank.repository.AccountRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.core.NestedExceptionUtils;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+
+import java.util.Locale;
 
 @Service
 public class AccountService {
@@ -20,7 +23,11 @@ public class AccountService {
 
     @Transactional
     public Account createAccount(CreateAccountRequest request) {
-        String normalizedEmail = request.email().trim().toLowerCase();
+        String normalizedEmail = normalizeEmail(request.email());
+
+        if (accountRepository.existsByEmail(normalizedEmail)) {
+            throw new DuplicateEmailException("An account with email '" + normalizedEmail + "' already exists.");
+        }
 
         Account account = new Account(
                 request.ownerName().trim(),
@@ -30,21 +37,13 @@ public class AccountService {
         try {
             return accountRepository.saveAndFlush(account);
         } catch (DataIntegrityViolationException ex) {
-
-//            if (accountRepository.existsByEmail(normalizedEmail)) {
+            if (isDuplicateEmailViolation(ex)) {
                 throw new DuplicateEmailException("An account with email '" + normalizedEmail + "' already exists.");
-//            }
-//            throw ex;
+            }
+
+            throw ex;
         }
-
-        // Po saveAndFlush() które wali się:
-        // - Transakcja jest oznaczona rollback-only
-        // - Sesja Hibernate ma w sobie "dirty" encję z null id
-        // - Baza odrzuciła INSERT, ale encja jest wciąż w sesji!
-        // Hibernate: "O, SELECT! Muszę najpierw auto-flush!"
-        // Próbuje flushować dirty encję → null id → AssertionFailure
     }
-
 
     public Account getAccountById(Long id) {
         return accountRepository.findById(id)
@@ -60,4 +59,24 @@ public class AccountService {
         accountRepository.deleteById(id);
     }
 
+
+
+
+
+
+    private boolean isDuplicateEmailViolation(DataIntegrityViolationException ex) {
+        String message = NestedExceptionUtils.getMostSpecificCause(ex).getMessage();
+
+        if (message == null) {
+            return false;
+        }
+
+        String normalizedMessage = message.toLowerCase();
+
+        return message.contains("UK_ACCOUNTS_EMAIL");
+    }
+
+    private String normalizeEmail(String email) {
+        return email.trim().toLowerCase(Locale.ROOT);
+    }
 }

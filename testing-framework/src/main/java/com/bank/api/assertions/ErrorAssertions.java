@@ -50,6 +50,10 @@ public final class ErrorAssertions {
         assertError(actual, 400, "BAD_REQUEST","Malformed JSON request");
     }
 
+    public static void assertInvalidPathParameter(ErrorResponse actual) {
+        assertError(actual, 400, "BAD_REQUEST","Invalid path parameter");
+    }
+
     public static void assertUnsupportedMediaType(ErrorResponse actual) {
         assertError(actual, 415, "UNSUPPORTED_MEDIA_TYPE","Unsupported Content-Type");
     }

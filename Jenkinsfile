@@ -42,8 +42,8 @@ pipeline {
     post {
         always {
             bat 'docker compose logs --no-color > docker-compose.log || exit /b 0'
-            junit testResults: 'testing-framework/target/surefire-reports/*.xml'
-            archiveArtifacts artifacts: 'docker-compose.log,testing-framework/target/surefire-reports/*', fingerprint: true
+            junit testResults: 'testing-framework/target/failsafe-reports/*.xml'
+            archiveArtifacts artifacts: 'docker-compose.log,testing-framework/target/failsafe-reports/*', fingerprint: true
             bat 'docker compose down -v --remove-orphans || exit /b 0'
             cleanWs()
         }

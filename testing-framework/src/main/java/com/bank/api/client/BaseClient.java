@@ -5,19 +5,26 @@ import com.bank.api.auth.TokenProvider;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 
+import static io.restassured.RestAssured.given;
+
 public class BaseClient {
 
-    protected RequestSpecification getRequestSpecification() {
+
+    protected RequestSpecification rawRequest() {
         return RestAssuredConfig.requestSpecification();
     }
 
-    protected RequestSpecification getJsonRequestSpecification() {
-        return RestAssuredConfig.requestSpecification()
+    protected RequestSpecification request() {
+        return rawRequest()
                 .contentType(ContentType.JSON);
     }
 
-    protected RequestSpecification getAuthenticatedRequestSpecification() {
-        return getJsonRequestSpecification()
-                .header("Authorization", "Bearer " + TokenProvider.getToken());
+    protected RequestSpecification authenticatedRequest() {
+        return authenticatedRequest(TokenProvider.getToken());
+    }
+
+    protected RequestSpecification authenticatedRequest(String token) {
+        return request()
+                .header("Authorization", "Bearer " + token);
     }
 }

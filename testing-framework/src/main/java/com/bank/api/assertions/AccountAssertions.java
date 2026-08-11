@@ -19,7 +19,7 @@ public final class AccountAssertions {
                 .isEqualTo(expected.ownerName());
 
         assertThat(actual.email())
-                .isEqualTo(expected.email());
+                .isEqualTo(expected.email().toLowerCase());
 
         assertThat(actual.balance())
                 .isEqualByComparingTo(expected.initialBalance());

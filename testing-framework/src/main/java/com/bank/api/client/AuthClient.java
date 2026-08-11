@@ -1,5 +1,6 @@
 package com.bank.api.client;
 
+import com.bank.api.assertions.ResponseAssertions;
 import com.bank.api.dto.request.LoginRequest;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
@@ -7,31 +8,37 @@ import io.restassured.specification.RequestSpecification;
 import static io.restassured.RestAssured.given;
 
 public class AuthClient extends BaseClient {
-
     private static final String LOGIN_ENDPOINT = "/auth/login";
 
-    private Response executeLogin(RequestSpecification spec, Object body) {
+
+
+    private Response executeLogin(Object body, RequestSpecification specification) {
         return given()
-                .spec(spec)
+                .spec(specification)
                 .body(body)
                 .post(LOGIN_ENDPOINT);
     }
 
-    public Response login(LoginRequest requestBody) {
-        return executeLogin(getJsonRequestSpecification(), requestBody);
+    public Response login(LoginRequest request) {
+        return executeLogin(request, request());
     }
 
-    public Response login(String requestBody) {
-        return executeLogin(getJsonRequestSpecification(), requestBody);
+    public Response login(String request) {
+        return executeLogin(request, request());
     }
 
-    public Response loginWithContentType(String requestBody, String contentType) {
-        RequestSpecification specification = getRequestSpecification().contentType(contentType);
+    public String loginAndGetToken(LoginRequest request) {
+        Response response = login(request);
+        ResponseAssertions.assertStatus(response, 200);
 
-        return executeLogin(specification, requestBody);
+        return response.jsonPath().getString("token");
     }
 
-    public Response loginWithoutContentType(String requestBody) {
-        return executeLogin(getRequestSpecification(), requestBody);
+    public Response loginWithContentType(String request, String contentType) {
+        return executeLogin(request, rawRequest().contentType(contentType));
+    }
+
+    public Response loginWithoutContentType(String request) {
+        return executeLogin(request, rawRequest());
     }
 }

@@ -91,7 +91,7 @@ public class LoginIT {
         ErrorResponse error = response.as(ErrorResponse.class);
         ErrorAssertions.assertBadRequest(error);
 
-        ValidationAssertions.assertFieldError(error, "username", "Username is required");
+        ValidationAssertions.assertFieldErrors(error, "username", "Username is required");
     }
 
     @Test
@@ -105,7 +105,7 @@ public class LoginIT {
         ErrorResponse error = response.as(ErrorResponse.class);
         ErrorAssertions.assertBadRequest(error);
 
-        ValidationAssertions.assertFieldError(error, "password", "Password is required");
+        ValidationAssertions.assertFieldErrors(error, "password", "Password is required");
     }
 
     @Test

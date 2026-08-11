@@ -6,15 +6,14 @@ The purpose of this document is to explain **why** specific solutions were chose
 
 ---
 
-# ADR-001 | Project Vision
-
+# ADR-001 | Project Vision 
 **Date:** 2026-06-18
+## Context
 
-## Goal
+The goal of the project is to simulate a production-like banking REST API together 
+with a professional API automation framework.
 
-The goal of this project is to simulate a production-like banking REST API together with a professional API automation framework.
-
-The project is intended to demonstrate skills expected from a QA Automation Engineer, including:
+The project uses the following technologies:
 
 - Java
 - Spring Boot
@@ -29,14 +28,21 @@ The project is intended to demonstrate skills expected from a QA Automation Engi
 
 ## Decision
 
-Instead of creating only automated tests, the project will contain both:
+The project consists of two independent parts:
 
 - Banking backend
-- Independent automation framework
+- API automation framework
 
-## Reason
+The backend provides a realistic application under test, 
+while the automation framework verifies its behavior.
 
-QA Automation Engineers often work with existing applications, but understanding backend architecture significantly improves the quality of automated tests and communication with developers.
+## Consequences
+
+- Building the project from scratch provides valuable practical experience.
+- The project grows incrementally, 
+making it easier to understand how architecture and automated tests evolve over time.
+- Working on both the backend and the automation framework gives a broader perspective on software quality and testing.
+
 
 ---
 
@@ -44,13 +50,11 @@ QA Automation Engineers often work with existing applications, but understanding
 
 **Date:** 2026-06-20
 
-## Problem
-
-The backend application and the automation framework are two different applications with different responsibilities.
+### Context
+The backend application and the automation framework serve different purposes and should evolve independently.
 
 ## Decision
-
-Created a Maven multi-module project:
+Organize the project as a Maven multi-module application.
 
 ```
 Money
@@ -59,35 +63,26 @@ Money
 └── testing-framework
 ```
 
-## Reason
-
-The backend and the testing framework should evolve independently while remaining inside the same repository.
-
-## Result
-
-- Better separation of responsibilities
-- Cleaner architecture
-- Easier CI/CD pipeline
+## Consequences
+- Clear separation of responsibilities
+- Independent module development
+- Simpler build and CI configuration
 
 ---
 
 # ADR-003 | Spring Boot REST API
-
 **Date:** 2026-06-21
 
+## Context
+The project requires a backend exposing REST endpoints for automated testing.
+
 ## Decision
+Implement the backend using Spring Boot and follow REST principles.
 
-Implemented the backend using Spring Boot.
-
-## Reason
-
-Spring Boot is one of the most commonly used Java frameworks in enterprise environments and banking systems.
-
-The API follows REST principles.
-
-## Result
-
-Implemented initial endpoints for account management.
+## Consequences
+- Enterprise-standard technology stack
+- Easy integration with REST Assured
+- Realistic API implementation
 
 ---
 
@@ -95,67 +90,45 @@ Implemented initial endpoints for account management.
 
 **Date:** 2026-06-23
 
-## Problem
-
-The project required a persistent database with version-controlled schema.
+## Context
+The project requires a persistent relational database with version-controlled schema changes.
 
 ## Decision
+Use PostgreSQL together with Flyway database migrations.
 
-Selected PostgreSQL together with Flyway migrations.
-
-## Reason
-
-PostgreSQL is widely used in enterprise environments.
-
-Flyway allows database schema evolution through versioned migrations.
-
-## Result
-
-- Database versioning
+## Consequences
+- Versioned database schema
 - Repeatable deployments
 - Easy environment setup
 
 ---
 
 # ADR-005 | Docker Development Environment
-
 **Date:** 2026-06-24
 
-## Problem
-
-Every developer should work against exactly the same environment.
+## Context
+Every developer should work on the same application environment.
 
 ## Decision
-
-Created a Docker Compose environment containing:
-
+Use Docker Compose to start:
 - PostgreSQL
 - Spring Boot Backend
 
-## Reason
-
-Docker eliminates environment differences between machines.
-
-## Result
-
-- Repeatable executions
+## Consequences
+- Consistent local environments
 - Easier onboarding
-- Stable local development
+- Repeatable executions
 
 ---
 
 # ADR-006 | Jenkins Continuous Integration
-
 **Date:** 2026-06-26
 
-## Problem
-
-API tests should execute automatically after every build.
+## Context
+API tests should be executed automatically during every build.
 
 ## Decision
-
-Created Jenkins Pipeline responsible for:
-
+Implement a Jenkins pipeline responsible for:
 - checkout source code
 - build backend
 - start Docker environment
@@ -164,25 +137,20 @@ Created Jenkins Pipeline responsible for:
 - collect reports
 - shutdown environment
 
-## Reason
-
-The pipeline simulates a typical CI process used in enterprise projects.
-
-## Result
-
-Fully automated API verification.
-
+## Consequences
+- Automated API verification
+- Faster feedback
+- CI process similar to enterprise projects
 ---
 
 # ADR-007 | REST Assured Test Framework
-
 **Date:** 2026-06-27
 
+## Context
+As the number of API tests grows, the framework should remain easy to maintain and extend.
+
 ## Decision
-
-Designed the automation framework using reusable layers.
-
-Project structure includes:
+Organize the automation framework into reusable layers:
 
 - API Clients
 - DTOs
@@ -191,42 +159,32 @@ Project structure includes:
 - Configuration
 - Tests
 
-## Reason
-
-The framework should remain readable and easily extendable as new endpoints are added.
-
-## Result
-
-Reusable and maintainable API tests.
-
+## Consequences
+- Better code reuse
+- Cleaner architecture
+- Easier implementation of new endpoints
 ---
 
 # ADR-008 | Authentication Using JWT
-
 **Date:** 2026-06-30
 
-## Problem
-
-Protected endpoints require authentication.
+## Context
+Some API endpoints require authenticated access.
 
 ## Decision
+Secure the API using JWT authentication.
 
-Implemented JWT authentication.
-
-Authentication flow:
+Authentication flow includes:
 
 - Login endpoint
 - JWT generation
 - JWT validation filter
 - Stateless authentication
 
-## Reason
-
-JWT is commonly used for securing REST APIs.
-
-## Result
-
-Authenticated API requests without server-side sessions.
+## Consequences
+- Stateless authentication
+- Secure REST API
+- Realistic enterprise authentication flow
 
 ---
 
@@ -234,147 +192,107 @@ Authenticated API requests without server-side sessions.
 
 **Date:** 2026-07-02
 
-## Problem
-
-Each test duplicated HTTP assertions.
-
-Example:
-
-- Status Code
-- Content-Type
+## Context
+Many tests repeated the same HTTP response assertions.
 
 ## Decision
-
-Introduced reusable ResponseAssertions.
-
-Main methods:
+Introduce reusable ResponseAssertions containing common HTTP verifications such as:
 
 - assertStatus()
 - assertContentTypeJson()
 - assertJsonResponse()
 
-## Reason
-
-HTTP response verification should be centralized.
-
-## Result
-
-Cleaner tests and less duplicated code.
+## Consequences
+- Reduced code duplication
+- Cleaner tests
+- Centralized HTTP assertions
 
 ---
 
 # ADR-010 | Dedicated Assertion Layers
-
 **Date:** 2026-07-02
 
-## Problem
-
+## Context
 HTTP assertions, business assertions and validation assertions represent different responsibilities.
 
+Keeping them together would reduce readability and violate the Single Responsibility Principle.
+
 ## Decision
+Separate assertions into dedicated classes:
 
-Separated assertions into dedicated classes.
+- ResponseAssertions
+- ErrorAssertions
+- ValidationAssertions
+- AccountAssertions
+- AuthAssertions
 
-```
-ResponseAssertions
-ErrorAssertions
-ValidationAssertions
-AccountAssertions
-AuthAssertions
-```
-
-## Reason
-
-Each assertion class should have one responsibility.
-
-## Result
-
-Better maintainability and cleaner test code.
+## Consequences
+- Better separation of concerns
+- Easier maintenance
+- Improved readability
+- Reusable assertion layer
 
 ---
 
 # ADR-011 | Custom AuthenticationEntryPoint
-
 **Date:** 2026-07-02
 
-## Problem
+## Context
+Authentication failures returned HTTP 403 Forbidden instead of HTTP 401 Unauthorized.
 
-Invalid login attempts returned HTTP 403 Forbidden.
-
-Authentication failures should return HTTP 401 Unauthorized.
-
-Additionally, authentication errors should follow the same JSON contract as all other API errors.
+Additionally, authentication errors should follow the same JSON contract as the remaining API errors.
 
 ## Decision
-
-Implemented custom JwtAuthenticationEntryPoint.
-
-The component:
+Implement a custom JwtAuthenticationEntryPoint that:
 
 - returns HTTP 401
-- returns JSON
+- returns JSON responses
 - reuses the common ErrorResponse DTO
 
-## Reason
-
-REST APIs should distinguish authentication failures (401) from authorization failures (403).
-
-## Result
-
+## Consequences
 - Correct HTTP semantics
-- Unified API error format
+- Consistent error responses
 - Easier automated verification
 
 ---
 
 # ADR-012 | Test Data Factories
-
 **Date:** 2026-07-02
 
-## Problem
-
-Tests contained hardcoded request data.
+## Context
+Tests contained hardcoded request objects, making them harder to read and maintain.
 
 ## Decision
-
-Introduced Data Factory classes.
+Introduce Data Factory classes for creating test data.
 
 Examples:
 
 - AccountDataFactory
 - LoginDataFactory
 
-## Reason
+Tests describe business scenarios instead of object construction.
 
-Tests should describe business scenarios instead of implementation details.
-
-Example:
-
-Instead of
-
-```java
-new LoginRequest("admin", "wrongPassword")
-```
-
-tests now use
-
-```java
-LoginDataFactory.invalidPassword()
-```
-
-## Result
-
-Improved readability and easier maintenance.
+## Consequences
+- Improved readability
+- Reusable test data
+- Easier maintenance
 
 ---
 
 # ADR-013 | Test Strategy
-
 **Date:** 2026-07-02
 
-## Decision
+## Context
+As the number of integration tests increased, maintaining a consistent test structure became increasingly important.
 
-The project follows the Arrange–Act–Assert (AAA) pattern for all automated tests.
+## Decision
+Adopt the Arrange–Act–Assert (AAA) testing pattern.
+
+Tests are written using the Given–When–Then convention:
+
+- Given — Arrange
+- When — Act
+- Then — Assert
 
 Each endpoint is verified using:
 
@@ -384,15 +302,42 @@ Each endpoint is verified using:
 - Authorization scenarios
 - Business rule verification
 
+## Consequences
+- Consistent test structure
+- Improved readability
+- Easier onboarding
+- Simpler future maintenance
+
+---
+# ADR-014 | Test Class Organization
+**Date:** 2026-07-28
+
+## Decision
+
+The integration tests are organized into multiple smaller test classes 
+based on their responsibility instead of keeping all scenarios in a single test class.
+
+Example structure:
+
+- `CreateAccountIT`
+- `GetAccountIT`
+- `DeleteAccountIT`
+- `AccountValidationIT`
+- `AccountSecurityIT`
+- `AccountConcurrencyIT`
+
 ## Reason
 
-A consistent testing strategy makes tests easier to understand and extend.
+As the project grows, a single test class becomes difficult to navigate and maintain. 
+Grouping tests by responsibility improves readability, reduces class size, 
+and makes it easier to locate, extend, and review test scenarios.
 
 ## Result
 
-A scalable and predictable test suite.
+A cleaner and more maintainable test suite with clear separation of concerns.**
 
 ---
+
 
 # Future Improvements
 

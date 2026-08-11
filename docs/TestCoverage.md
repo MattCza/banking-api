@@ -1,33 +1,60 @@
-## Authentication:
+## Authentication
 ### POST /api/v1/auth/login
 
-| Scenario             | Priority | Automated | Status  |
-|----------------------|----------|---------|---------|
-| Valid login          | Critical | ✅ | DONE    |
-| Invalid username     | Critical | ✅ | DONE |
-| Invalid password     | Critical | ✅ | DONE |
-| Blank username       | High | ✅ | DONE |
-| Blank password       | High | ✅ | DONE |
-| Username null        | High | ✅ | DONE |
-| Password null        | High | ✅ | DONE |
-| Empty request body   | High | ✅ | DONE |
-| Malformed JSON       | Medium | ✅ | DONE |
-| Missing Content-Type | Medium | ✅ | DONE |
-| Wrong Content-Type   | Medium | ✅ | DONE |
+| Scenario             | Priority | Automated | Status |
+|----------------------|----------|-----------|--------|
+| Valid login          | Critical | ✅         | DONE   |
+| Invalid username     | Critical | ✅         | DONE   |
+| Invalid password     | Critical | ✅         | DONE   |
+| Blank username       | High     | ✅         | DONE   |
+| Blank password       | High     | ✅         | DONE   |
+| Username null        | High     | ✅         | DONE   |
+| Password null        | High     | ✅         | DONE   |
+| Empty request body   | High     | ✅         | DONE   |
+| Malformed JSON       | Medium   | ✅         | DONE   |
+| Missing Content-Type | Medium   | ✅         | DONE   |
+| Wrong Content-Type   | Medium   | ✅         | DONE   |
 
-## Accounts:
+## Accounts
+### POST /api/v1/accounts
 
-| Endpoint       | Scenario         | Priority | Automated | Status  |
-| -------------- | ---------------- | -------- | --------- | ------- |
-| POST /accounts | Valid account    | Critical | ✅         | ✅       |
-| POST /accounts | Duplicate email  | Critical | ✅         | ✅       |
-| POST /accounts | Invalid email    | High     | ✅         | ✅       |
-| POST /accounts | Empty owner      | High     | ✅         | ✅       |
-| POST /accounts | Null owner       | High     | ✅         | ✅       |
-| POST /accounts | Blank owner      | High     | ❌         | Planned |
-| POST /accounts | Too short owner  | High     | ✅         | ✅       |
-| POST /accounts | Too long owner   | High     | ✅         | ✅       |
-| POST /accounts | Negative balance | High     | ✅         | ✅       |
-| POST /accounts | Missing JWT      | Critical | ❌         | Planned |
-| POST /accounts | Invalid JWT      | Critical | ❌         | Planned |
-| POST /accounts | Expired JWT      | Critical | ❌         | Planned |
+| Scenario                            | Priority | Automated | Status |
+|-------------------------------------|----------|-----------|--------|
+| Valid account                       | Critical | ✅         | DONE   |
+| Duplicate email                     | Critical | ✅         | DONE   |
+| Duplicate email - parallel requests | Critical | ✅         | DONE   |
+| Empty owner name                    | High     | ✅         | DONE   |
+| Null owner name                     | High     | ✅         | DONE   |
+| Too short owner name                | High     | ✅         | DONE   |
+| Too long owner name                 | High     | ✅         | DONE   |
+| Empty email                         | High     | ✅         | DONE   |
+| Null email                          | High     | ✅         | DONE   |
+| Too long email                      | High     | ✅         | DONE   |
+| Null initial balance                | High     | ✅         | DONE   |
+| Negative initial balance            | High     | ✅         | DONE   |
+| Too many integer digits in balance  | High     | ✅         | DONE   |
+| Too many decimal places in balance  | High     | ✅         | DONE   |
+| Missing JWT                         | Critical | ✅         | DONE   |
+| Invalid JWT                         | Critical | ✅         | DONE   |
+| Expired JWT                         | Critical | ✅         | DONE   |
+
+### GET /api/v1/accounts/{id}
+
+| Scenario               | Priority | Automated | Status |
+|------------------------|----------|-----------|--------|
+| Existing account       | Critical | ✅         | DONE   |
+| Account does not exist | High     | ✅         | DONE   |
+| Missing JWT            | Critical | ✅         | DONE   |
+| Invalid JWT            | Critical | ✅         | DONE   |
+| Expired JWT            | Critical | ✅         | DONE   |
+
+### DELETE /api/v1/accounts/{id}
+
+| Scenario                                      | Priority | Automated | Status |
+|-----------------------------------------------|----------|-----------|--------|
+| Delete existing account                       | Critical | ✅         | DONE   |
+| Verify deleted account is no longer available | Critical | ✅         | DONE   |
+| Delete non-existing account                   | High     | ✅         | DONE   |
+| Missing JWT                                   | Critical | ✅         | DONE   |
+| Invalid JWT                                   | Critical | ✅         | DONE   |
+| Expired JWT                                   | Critical | ✅         | DONE   |
