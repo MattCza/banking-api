@@ -40,13 +40,14 @@
 
 ### GET /api/v1/accounts/{id}
 
-| Scenario               | Priority | Automated | Status |
-|------------------------|----------|-----------|--------|
-| Existing account       | Critical | ✅         | DONE   |
-| Account does not exist | High     | ✅         | DONE   |
-| Missing JWT            | Critical | ✅         | DONE   |
-| Invalid JWT            | Critical | ✅         | DONE   |
-| Expired JWT            | Critical | ✅         | DONE   |
+| Scenario             | Priority | Automated | Status |
+|----------------------|----------|-----------|--------|
+| Existing account     | Critical | ✅         | DONE   |
+| Non-existing account | High     | ✅         | DONE   |
+| Non-numeric ID       | High     | ✅         | DONE   |
+| Missing JWT          | Critical | ✅         | DONE   |
+| Invalid JWT          | Critical | ✅         | DONE   |
+| Expired JWT          | Critical | ✅         | DONE   |
 
 ### DELETE /api/v1/accounts/{id}
 
@@ -55,6 +56,7 @@
 | Delete existing account                       | Critical | ✅         | DONE   |
 | Verify deleted account is no longer available | Critical | ✅         | DONE   |
 | Delete non-existing account                   | High     | ✅         | DONE   |
+| Delete Non-numeric ID                         | Medium   | ✅         | DONE   |
 | Missing JWT                                   | Critical | ✅         | DONE   |
 | Invalid JWT                                   | Critical | ✅         | DONE   |
 | Expired JWT                                   | Critical | ✅         | DONE   |

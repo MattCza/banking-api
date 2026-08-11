@@ -21,24 +21,25 @@ public class DeleteAccountIT {
 
     private void assertUnauthorized(Response response) {
         ResponseAssertions.assertStatus(response, 401);
-
         ErrorResponse errorResponse = response.as(ErrorResponse.class);
         ErrorAssertions.assertUnauthorized(errorResponse);
+    }
+
+    private Long createAccountAndGetId() {
+        Response response = accountClient.createAccount(AccountDataFactory.validAccount().build());
+        ResponseAssertions.assertStatus(response, 201);
+        return response.as(AccountResponse.class).id();
     }
 
     @Test
     @DisplayName("Should delete account successfully")
     void shouldDeleteAccount_WhenAccountExists() {
-        CreateAccountRequest request = AccountDataFactory.validAccount().build();
+        Long accountId = createAccountAndGetId();
 
-        Response response = accountClient.createAccount(request);
-        ResponseAssertions.assertStatus(response, 201);
-
-        AccountResponse createdAccount = response.as(AccountResponse.class);
-        Response deleteResponse = accountClient.deleteAccountById(createdAccount.id());
+        Response deleteResponse = accountClient.deleteAccountById(accountId);
         ResponseAssertions.assertStatus(deleteResponse, 204);
 
-        Response getResponse = accountClient.getAccountById(createdAccount.id());
+        Response getResponse = accountClient.getAccountById(accountId);
         ResponseAssertions.assertStatus(getResponse, 404);
     }
 
@@ -53,49 +54,40 @@ public class DeleteAccountIT {
     }
 
     @Test
+    @DisplayName("Should return 400 when attempting to delete account with non-numeric ID")
+    void shouldReturn400_WhenDeletingNonNumericId() {
+        Response response = accountClient.deleteAccountById("asd");
+        ResponseAssertions.assertStatus(response, 400);
+
+        ErrorResponse errorResponse = response.as(ErrorResponse.class);
+        ErrorAssertions.assertInvalidPathParameter(errorResponse);
+    }
+
+    @Test
     @DisplayName("Should return 401 when JWT is missing for delete account")
     void shouldReturn401_WhenJwtIsMissing() {
-        Response createResponse = accountClient.createAccount(AccountDataFactory.validAccount().build());
-        ResponseAssertions.assertStatus(createResponse, 201);
-
-        Long accountId = createResponse.as(AccountResponse.class).id();
+        Long accountId = createAccountAndGetId();
         Response response = accountClient.deleteAccountById(accountId, null);
-
+        response.then().log().all();
         assertUnauthorized(response);
     }
 
     @Test
     @DisplayName("Should return 401 when JWT is invalid for delete account")
     void shouldReturn401_WhenJwtIsInvalid() {
-        Response createResponse = accountClient.createAccount(AccountDataFactory.validAccount().build());
-        ResponseAssertions.assertStatus(createResponse, 201);
-
-        Long accountId = createResponse.as(AccountResponse.class).id();
+        Long accountId = createAccountAndGetId();
         Response response = accountClient.deleteAccountById(accountId, "invalid JWT");
-
         assertUnauthorized(response);
     }
 
     @Test
     @DisplayName("Should return 401 when JWT is expired for delete account")
     void shouldReturn401_WhenJwtIsExpired() throws InterruptedException {
-        LoginRequest loginRequest = LoginDataFactory.validAdmin();
-        String token = authClient.loginAndGetToken(loginRequest);
-
-        Response createResponse = accountClient.createAccount(AccountDataFactory.validAccount().build());
-        ResponseAssertions.assertStatus(createResponse, 201);
-
-        Long accountId = createResponse.as(AccountResponse.class).id();
-        Response firstResponse = accountClient.deleteAccountById(accountId, token);
-        ResponseAssertions.assertStatus(firstResponse, 204);
-
-        Response secondCreateResponse = accountClient.createAccount(AccountDataFactory.validAccount().build());
-        ResponseAssertions.assertStatus(secondCreateResponse, 201);
+        String token = authClient.loginAndGetToken(LoginDataFactory.validAdmin());
+        Long accountId = createAccountAndGetId();
 
         Thread.sleep(6500);
-        Long secondAccountId = secondCreateResponse.as(AccountResponse.class).id();
-        Response secondResponse = accountClient.deleteAccountById(secondAccountId, token);
-
+        Response secondResponse = accountClient.deleteAccountById(accountId, token);
         assertUnauthorized(secondResponse);
     }
 }

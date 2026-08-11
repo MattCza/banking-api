@@ -24,7 +24,12 @@ public class BaseClient {
     }
 
     protected RequestSpecification authenticatedRequest(String token) {
-        return request()
-                .header("Authorization", "Bearer " + token);
+        RequestSpecification specification = request();
+
+        if (token != null) {
+            specification.header("Authorization", "Bearer " + token);
+        }
+
+        return specification;
     }
 }

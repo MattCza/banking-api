@@ -86,7 +86,7 @@ public class GetAccountIT {
     // Error handling in BE -> DONE
     @Test
     @DisplayName("Should return 400 when account ID is not a number")
-    void shouldReturn400_WhenAccountIdIsNotANumber() {
+    void shouldReturn400_WhenAccountIdIsNonNumeric() {
         Response response = accountClient.getAccountById("asd");
         ResponseAssertions.assertStatus(response, 400);
 

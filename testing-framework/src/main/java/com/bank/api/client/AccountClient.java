@@ -26,20 +26,9 @@ public class AccountClient extends BaseClient {
         return executeCreateAccount(request, authenticatedRequest(token));
     }
 
-    public Response createAccountWithoutToken(CreateAccountRequest request) {
-        return executeCreateAccount(request, request());
-    }
 
 
-
-    private Response executeGetAccountById(Long accountId, RequestSpecification specification) {
-        return given()
-                .spec(specification)
-                .pathParam("id", accountId)
-                .get(ACCOUNTS_ENDPOINT + "/{id}");
-    }
-
-    private Response executeGetAccountById(String accountId, RequestSpecification specification) {
+    private Response executeGetAccountById(Object accountId, RequestSpecification specification) {
         return given()
                 .spec(specification)
                 .pathParam("id", accountId)
@@ -58,13 +47,9 @@ public class AccountClient extends BaseClient {
         return executeGetAccountById(accountId, authenticatedRequest(token));
     }
 
-    public Response getAccountByIdWithoutToken(Long accountId) {
-        return executeGetAccountById(accountId, request());
-    }
 
 
-
-    private Response executeDeleteAccountById(Long accountId, RequestSpecification specification) {
+    private Response executeDeleteAccountById(Object accountId, RequestSpecification specification) {
         return given()
                 .spec(specification)
                 .pathParam("id", accountId)
@@ -74,13 +59,12 @@ public class AccountClient extends BaseClient {
     public Response deleteAccountById(Long accountId) {
         return executeDeleteAccountById(accountId, authenticatedRequest());
     }
+    public Response deleteAccountById(String accountId) {
+        return executeDeleteAccountById(accountId, authenticatedRequest());
+    }
 
     public Response deleteAccountById(Long accountId, String token) {
         return executeDeleteAccountById(accountId, authenticatedRequest(token));
 
-    }
-
-    public Response deleteAccountByIdWithoutToken(Long accountId) {
-        return executeDeleteAccountById(accountId, request());
     }
 }
