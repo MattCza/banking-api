@@ -25,7 +25,7 @@ public class AccountConcurrencyIT {
     @DisplayName("Should allow only one successful create when duplicate email requests run in parallel")
     void shouldReturn409Conflict_WhenParallelEmailIsDuplicate() throws Exception {
         int numberOfRequests = 10;
-        CreateAccountRequest payload = AccountDataFactory.validAccount().build();
+        CreateAccountRequest payload = AccountDataFactory.validCreateAccount().build();
 
         CountDownLatch ready = new CountDownLatch(numberOfRequests);
         CountDownLatch start = new CountDownLatch(1);

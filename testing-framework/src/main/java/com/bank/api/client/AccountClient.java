@@ -1,6 +1,7 @@
 package com.bank.api.client;
 
 import com.bank.api.dto.request.CreateAccountRequest;
+import com.bank.api.dto.request.UpdateAccountRequest;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 
@@ -66,5 +67,23 @@ public class AccountClient extends BaseClient {
     public Response deleteAccountById(Long accountId, String token) {
         return executeDeleteAccountById(accountId, authenticatedRequest(token));
 
+    }
+
+
+
+    private Response executeUpdateAccount(UpdateAccountRequest request, Long accountId, RequestSpecification specification) {
+        return given()
+                .spec(specification)
+                .pathParam("id", accountId)
+                .body(request)
+                .put(ACCOUNTS_ENDPOINT + "/{id}");
+    }
+
+    public Response updateAccount(UpdateAccountRequest request, Long accountId) {
+        return executeUpdateAccount(request, accountId, authenticatedRequest());
+    }
+
+    public Response updateAccount(UpdateAccountRequest request, Long accountId, String token) {
+        return executeUpdateAccount(request, accountId, authenticatedRequest(token));
     }
 }

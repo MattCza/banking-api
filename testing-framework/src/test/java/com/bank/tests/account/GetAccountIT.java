@@ -30,7 +30,7 @@ public class GetAccountIT {
     }
 
     private Long createAccountAndGetId() {
-        Response createResponse = accountClient.createAccount(AccountDataFactory.validAccount().build());
+        Response createResponse = accountClient.createAccount(AccountDataFactory.validCreateAccount().build());
         ResponseAssertions.assertStatus(createResponse, 201);
 
         return createResponse.as(AccountResponse.class).id();
@@ -39,7 +39,7 @@ public class GetAccountIT {
     @Test
     @DisplayName("Should return account details when account exists")
     void shouldReturnAccount_WhenAccountExists() {
-        CreateAccountRequest request = AccountDataFactory.validAccount().build();
+        CreateAccountRequest request = AccountDataFactory.validCreateAccount().build();
 
         Response response = accountClient.createAccount(request);
         ResponseAssertions.assertStatus(response, 201);

@@ -2,380 +2,196 @@
 
 ## 1. Purpose
 
-The purpose of this document is to describe the **testing strategy** for the **Money API** project.
+This document describes the testing strategy for the Money API project.
 
-The project simulates a banking REST API and includes an automated API testing framework built with Java and REST Assured.
+The system under test is a Spring Boot banking API secured with JWT. The automated test layer is implemented as a separate REST Assured framework to verify business behaviour, validation, security, and API contracts through the public interface.
 
-The objective of the test strategy is to ensure that the API is:
+The main goals of the strategy are to:
 
-- Functionally correct
-- Secure
-- Reliable
-- Stable after future changes
-- Ready for Continuous Integration
+- verify core business flows
+- detect regressions quickly
+- validate security and error handling
+- keep test execution repeatable across local and CI environments
 
----
+## 2. Scope
 
-# 2. Scope
+### In Scope
 
-## In Scope
+- authentication endpoint behavior
+- account create, read, update, and delete flows
+- request validation rules
+- HTTP status code correctness
+- API error response contract
+- authorization checks for protected endpoints
+- duplicate email and concurrency behavior
 
-The following areas are covered by automated API tests:
+### Out of Scope
 
-- Authentication (JWT)
-- Account creation
-- Account retrieval
-- Account deletion
-- Request validation
-- HTTP status codes
-- Error handling
-- API contract verification
-- Security verification
+- UI testing
+- performance, load, and stress testing
+- penetration testing
+- accessibility testing
+- consumer-driven contract tooling
 
-## Out of Scope
+## 3. Test Levels
 
-The following test types are currently not implemented:
-
-- UI Testing
-- Performance Testing
-- Load Testing
-- Stress Testing
-- Accessibility Testing
-- Penetration Testing
-
----
-
-# 3. Test Objectives
-
-The API tests verify:
-
-- Correct business behaviour
-- Proper validation
-- Authentication and authorization
-- Correct HTTP status codes
-- Response body correctness
-- Error response consistency
-- Database interaction through public API
-- Regression after future changes
-
----
-
-# 4. Test Levels
-
-| Test Level | Status |
-|------------|--------|
-| Unit Tests | Planned |
+| Test Level | Current Status |
+|------------|----------------|
+| Unit Tests | Implemented for selected service logic |
 | API Integration Tests | Implemented |
 | End-to-End Tests | Planned |
 | Performance Tests | Planned |
 
-The current project focuses primarily on API Integration Testing using REST Assured.
+The primary focus of the project is API integration testing. Unit tests are used to protect core service logic and edge cases at lower cost.
 
----
+## 4. Test Types
 
-# 5. Test Types
+The suite combines:
 
-The following testing techniques are used:
+- functional testing
+- validation testing
+- negative testing
+- security testing
+- regression testing
+- API contract testing
+- concurrency testing for high-risk scenarios
 
-- Functional Testing
-- Validation Testing
-- Negative Testing
-- Security Testing
-- Smoke Testing
-- Regression Testing
-- API Contract Testing
+## 5. Test Design Approach
 
----
+The test suite follows a risk-based approach. Highest-priority scenarios are covered first, especially around authentication, authorization, account management, and validation.
 
-# 6. Test Design Techniques
+The following design techniques are used:
 
-The following test design techniques are applied when creating test cases.
+- boundary value analysis for field lengths and numeric precision
+- equivalence partitioning for valid and invalid request data
+- negative testing for malformed or incomplete input
+- business-rule verification for duplicate data and not-found conditions
 
-## Boundary Value Analysis (BVA)
+Tests are written using a consistent Arrange-Act-Assert structure and named with business intent in mind.
 
-Examples:
-
-- ownerName minimum length
-- ownerName maximum length
-- balance decimal precision
-
----
-
-## Equivalence Partitioning (EP)
-
-Examples:
-
-Valid email
-
-```
-john@example.com
-```
-
-Invalid email
-
-```
-john
-```
-
-```
-john@
-```
-
-```
-@example.com
-```
-
----
-
-## Negative Testing
-
-Examples:
-
-- Missing request body
-- Invalid JSON
-- Invalid JWT
-- Expired JWT
-- Missing required fields
-
----
-
-## Risk-Based Testing
-
-The testing effort focuses primarily on business-critical functionality.
-
-Highest priority areas:
-
-- Authentication
-- Authorization
-- Account management
-- Validation
-- Error handling
-
----
-
-# 7. Risk Assessment
-
-| Area | Risk | Priority |
-|------|------|----------|
-| Authentication | High | Critical |
-| Authorization | High | Critical |
-| Account Creation | High | High |
-| Account Retrieval | Medium | High |
-| Account Deletion | High | High |
-| Request Validation | Medium | Medium |
-| Error Handling | Medium | Medium |
-
-Testing effort is prioritised according to business risk.
-
----
-
-# 8. API Coverage
-
-## Authentication
-
-### POST /api/v1/auth/login
-
-### Happy Path
-
-- Valid username
-- Valid password
-
-### Validation
-
-- Username is null
-- Username is empty
-- Password is null
-- Password is empty
+## 6. Functional Areas Covered
 
 ### Authentication
 
-- Invalid username
-- Invalid password
-- Malformed JSON
+`POST /api/v1/auth/login`
 
-### Contract
+Covered areas:
 
-- JWT returned
-- Correct HTTP status
-- Correct response structure
+- valid login
+- invalid credentials
+- blank and null fields
+- empty request body
+- malformed JSON
+- missing or wrong content type
+- JWT presence in successful response
 
----
+### Accounts
 
-## Accounts
+`POST /api/v1/accounts`
 
-### POST /api/v1/accounts
+Covered areas:
 
-### Happy Path
+- successful account creation
+- validation of owner name, email, and balance
+- duplicate email handling
+- duplicate email under parallel requests
+- protected endpoint authorization checks
+- response contract validation
 
-- Valid account creation
+`GET /api/v1/accounts/{id}`
 
-### Validation
+Covered areas:
 
-- ownerName null
-- ownerName empty
-- ownerName blank
-- ownerName too short
-- ownerName too long
+- fetch existing account
+- account not found
+- invalid path parameter
+- protected endpoint authorization checks
 
-- email null
-- email empty
-- invalid email
-- duplicate email
+`PUT /api/v1/accounts/{id}`
 
-- balance null
-- negative balance
-- too many decimal places
+Covered areas:
 
-### Security
+- successful update of account data
+- update with unchanged email
+- conflict when email belongs to another account
 
-- Missing JWT
-- Invalid JWT
-- Expired JWT
+`DELETE /api/v1/accounts/{id}`
 
-### Contract
+Covered areas:
 
-- HTTP 201
-- JSON response
-- Response body correctness
+- delete existing account
+- verify resource is not available after deletion
+- account not found
+- invalid path parameter
+- protected endpoint authorization checks
 
----
+## 7. Test Data Strategy
 
-### GET /api/v1/accounts/{id}
+The framework uses both static and dynamic test data.
 
-### Happy Path
+### Static Data
 
-- Existing account
+- seeded local users for authentication
+- environment-specific base URLs and ports
 
-### Business
+### Dynamic Data
 
-- Account not found
+Generated data is used for:
 
-### Validation
+- owner names
+- email addresses
+- monetary values
 
-- Invalid ID
-- Negative ID
+Dynamic test data reduces collisions between test runs and improves repeatability across environments.
 
-### Security
-
-- Missing JWT
-- Invalid JWT
-
-### Contract
-
-- Correct response body
-
----
-
-### DELETE /api/v1/accounts/{id}
-
-### Happy Path
-
-- Existing account
-
-### Business
-
-- Account not found
-
-### Security
-
-- Missing JWT
-- Invalid JWT
-
----
-
-# 9. Test Data
-
-The framework uses two approaches for test data generation.
-
-## Static Data
-
-- Test users
-- Authentication credentials
-
-## Dynamic Data
-
-Generated using DataFaker:
-
-- Owner names
-- Email addresses
-- Account balances
-
-Dynamic test data reduces conflicts between test executions.
-
----
-
-# 10. Test Environment
-
-Supported environments:
+## 8. Test Environments
 
 | Environment | Purpose |
 |-------------|---------|
-| Local | Developer workstation |
-| Docker | Local integration testing |
-| Jenkins | Continuous Integration |
+| Local | developer execution against a locally running backend |
+| Docker | repeatable local integration setup |
+| Jenkins | continuous integration execution |
 
-Environment selection is controlled using Maven properties.
+Environment selection is controlled through Maven properties:
 
-Example:
-
-```
-mvn verify -Denv=local
+```bash
+mvn -pl testing-framework -am verify -Denv=local
 ```
 
----
+## 9. Entry and Exit Criteria
 
-# 11. Continuous Integration
+### Entry Criteria
 
-The project uses Jenkins Pipeline.
+- backend application is available
+- database migrations completed successfully
+- required environment variables are configured
+- selected target environment is reachable
 
-Pipeline stages:
+### Exit Criteria
 
-1. Checkout
-2. Build Backend
-3. Start Docker Environment
-4. Execute API Tests
-5. Publish Test Reports
+- all automated checks pass
+- no unexpected 5xx responses appear
+- error contracts remain consistent
+- protected endpoints enforce authentication as expected
 
-The goal is to execute automated API regression tests for every build.
+## 10. CI Execution
 
----
+The project includes Jenkins-based CI for running the API regression suite. The repository also includes a GitHub Actions workflow for fast verification of the build and unit tests on GitHub.
 
-# 12. Success Criteria
+The CI objective is to provide fast feedback after code changes and prevent obvious regressions before merge or publication.
 
-The build is considered successful when:
+## 11. Risks and Future Work
 
-- All automated tests pass
-- No unexpected HTTP responses occur
-- No validation regressions are detected
-- Authentication works correctly
-- Jenkins pipeline finishes successfully
+Current gaps that are intentionally left for future iterations:
 
----
+- broader PUT validation and security coverage
+- transfer and transaction domain scenarios
+- performance and resilience testing
+- richer reporting and quality gates
+- Testcontainers-based environment management
 
-# 13. Future Improvements
+## 12. Summary
 
-Planned improvements:
+The Money API test strategy is designed to demonstrate practical QA and backend engineering skills in a portfolio-ready project.
 
-- Testcontainers
-- WireMock
-- JaCoCo
-- SonarQube
-- GitHub Actions
-- Performance Testing
-- Contract Testing
-- OWASP Dependency Check
-
----
-
-# 14. Summary
-
-This project follows a **Risk-Based Testing** approach.
-
-API scenarios are designed using:
-
-- Boundary Value Analysis
-- Equivalence Partitioning
-- Negative Testing
-- Security Testing
-
-The objective is to provide reliable automated regression tests for a RESTful banking application while maintaining high readability, scalability, and maintainability of the test framework.
+It prioritises the highest-risk API behaviours, keeps the test suite maintainable through reusable framework layers, and supports repeatable execution in local and CI environments.

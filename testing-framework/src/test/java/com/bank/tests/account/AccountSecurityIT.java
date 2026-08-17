@@ -28,14 +28,14 @@ public class AccountSecurityIT {
     @Test
     @DisplayName("Should return 401 when JWT is missing")
     void shouldReturn401_WhenJwtIsMissing() {
-        Response response = accountClient.createAccount(AccountDataFactory.validAccount().build(), null);
+        Response response = accountClient.createAccount(AccountDataFactory.validCreateAccount().build(), null);
         assertUnauthorized(response);
     }
 
     @Test
     @DisplayName("Should return 401 when JWT is invalid")
     void shouldReturn401_WhenJwtIsInvalid() {
-        Response response = accountClient.createAccount(AccountDataFactory.validAccount().build(), "invalid JWT");
+        Response response = accountClient.createAccount(AccountDataFactory.validCreateAccount().build(), "invalid JWT");
         assertUnauthorized(response);
     }
 
@@ -44,7 +44,7 @@ public class AccountSecurityIT {
     void shouldReturn401_WhenJwtIsExpired() throws InterruptedException {
         LoginRequest loginRequest = LoginDataFactory.validAdmin();
         String token = authClient.loginAndGetToken(loginRequest);
-        CreateAccountRequest firstRequest = AccountDataFactory.validAccount().build();
+        CreateAccountRequest firstRequest = AccountDataFactory.validCreateAccount().build();
 
         // Token is still valid
         Response firstResponse = accountClient.createAccount(firstRequest, token);
@@ -53,7 +53,7 @@ public class AccountSecurityIT {
 
         // Token expires
         Thread.sleep(6500);
-        CreateAccountRequest secondRequest = AccountDataFactory.validAccount().build();
+        CreateAccountRequest secondRequest = AccountDataFactory.validCreateAccount().build();
         Response secondResponse = accountClient.createAccount(secondRequest, token);
 
         assertUnauthorized(secondResponse);

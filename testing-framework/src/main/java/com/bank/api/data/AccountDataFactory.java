@@ -7,8 +7,12 @@ public final class AccountDataFactory {
     private AccountDataFactory() {
     }
 
-    public static CreateAccountRequestBuilder validAccount() {
+    public static CreateAccountRequestBuilder validCreateAccount() {
         return new CreateAccountRequestBuilder();
+    }
+
+    public static UpdateAccountRequestBuilder validUpdateAccount() {
+        return new UpdateAccountRequestBuilder();
     }
 
     public static String emailWithLength(int length) {

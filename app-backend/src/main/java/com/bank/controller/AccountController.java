@@ -2,6 +2,7 @@ package com.bank.controller;
 
 import com.bank.dto.account.AccountResponse;
 import com.bank.dto.account.CreateAccountRequest;
+import com.bank.dto.account.UpdateAccountRequest;
 import com.bank.model.Account;
 import com.bank.service.AccountService;
 import jakarta.validation.Valid;
@@ -19,6 +20,7 @@ public class AccountController {
         this.accountService = accountService;
     }
 
+
     @PostMapping
     public ResponseEntity<AccountResponse> createAccount(@Valid @RequestBody CreateAccountRequest request) {
         Account createdAccount = accountService.createAccount(request);
@@ -32,6 +34,7 @@ public class AccountController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<AccountResponse> getAccountById(@PathVariable("id") Long id) {
@@ -47,10 +50,25 @@ public class AccountController {
         return ResponseEntity.ok(response);
     }
 
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteAccountById(@PathVariable("id") Long id) {
         accountService.deleteAccountById(id);
     }
 
+
+    @PutMapping("/{id}")
+    public ResponseEntity<AccountResponse> updateAccountById(@PathVariable("id") Long id, @Valid @RequestBody UpdateAccountRequest request) {
+        Account updatedAccount = accountService.updateAccount(id, request);
+
+        AccountResponse response = new AccountResponse(
+                updatedAccount.getId(),
+                updatedAccount.getOwnerName(),
+                updatedAccount.getEmail(),
+                updatedAccount.getBalance()
+        );
+
+        return ResponseEntity.ok(response);
+    }
 }

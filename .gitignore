@@ -1,4 +1,6 @@
 .env
+*.log
+*.err.log
 
 target/
 !.mvn/wrapper/maven-wrapper.jar

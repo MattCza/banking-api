@@ -1,6 +1,7 @@
 package com.bank.service;
 
 import com.bank.dto.account.CreateAccountRequest;
+import com.bank.dto.account.UpdateAccountRequest;
 import com.bank.exception.AccountNotFoundException;
 import com.bank.exception.DuplicateEmailException;
 import com.bank.model.Account;
@@ -57,6 +58,32 @@ public class AccountService {
         }
 
         accountRepository.deleteById(id);
+    }
+
+    @Transactional
+    public Account updateAccount(Long id, UpdateAccountRequest request) {
+        Account account = accountRepository.findById(id)
+                .orElseThrow(() -> new AccountNotFoundException("Account with id " + id + " not found."));
+
+        String normalizedEmail = normalizeEmail(request.email());
+
+        if (accountRepository.existsByEmailAndIdNot(normalizedEmail, id)) {
+            throw new DuplicateEmailException("Account with email '" + normalizedEmail + "' already exists.");
+        }
+
+        account.setOwnerName(request.ownerName().trim());
+        account.setEmail(normalizedEmail);
+        account.setBalance(request.balance());
+
+        try {
+            return accountRepository.saveAndFlush(account);
+        } catch (DataIntegrityViolationException ex) {
+            if (isDuplicateEmailViolation(ex)) {
+                throw new DuplicateEmailException("An account with email '" + normalizedEmail + "' already exists.");
+            }
+
+            throw ex;
+        }
     }
 
 

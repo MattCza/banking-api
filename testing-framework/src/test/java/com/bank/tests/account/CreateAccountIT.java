@@ -20,7 +20,7 @@ public class CreateAccountIT {
     @DisplayName("Should successfully open a new bank account when provided a valid payload")
     public void shouldCreateAccountSuccessfully_WhenPayloadIsValid() {
         // Arrange
-        CreateAccountRequest request = AccountDataFactory.validAccount().build();
+        CreateAccountRequest request = AccountDataFactory.validCreateAccount().build();
 
         // Act
         Response response = accountClient.createAccount(request);
@@ -39,7 +39,7 @@ public class CreateAccountIT {
     @DisplayName("Should fail to create an account when the email address already exists")
     public void shouldReturn409Conflict_WhenEmailIsDuplicate() {
         // Arrange
-        CreateAccountRequest request = AccountDataFactory.validAccount().build();
+        CreateAccountRequest request = AccountDataFactory.validCreateAccount().build();
 
         // Act
         Response response = accountClient.createAccount(request);
