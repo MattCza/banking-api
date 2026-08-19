@@ -19,7 +19,7 @@ public class LoginDataFactory {
     }
 
     public static LoginRequest invalidUsername() {
-        return new LoginRequest("admin", "admin123");
+        return new LoginRequest("invalidAdmin", "admin123");
     }
 
     public static LoginRequest blankUsername() {

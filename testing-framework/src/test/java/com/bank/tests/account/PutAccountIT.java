@@ -52,36 +52,36 @@ public class PutAccountIT {
     @DisplayName("Should return 409 when updating account with email belonging to another account")
     void shouldReturn409_WhenEmailBelongsToAnotherAccount() {
         CreateAccountRequest firstAccountRequest = AccountDataFactory.validCreateAccount()
-                .withOwnerName("John Doe")
-                .withEmail("John@Doe.xyz")
+                .withOwnerName("Adam Nowak")
+                .withEmail("Adam@Nowak.pl")
                 .withBalance(new BigDecimal("1234.00"))
                 .build();
 
         Response firstCreateAccountResponse = accountClient.createAccount(firstAccountRequest);
         ResponseAssertions.assertStatus(firstCreateAccountResponse, 201);
-        Long firstAccountId = firstCreateAccountResponse.as(AccountResponse.class).id();
 
         CreateAccountRequest secondAccountRequest = AccountDataFactory.validCreateAccount()
-                .withOwnerName("Jane Doe")
-                .withEmail("Jane@Doe.xyz")
+                .withOwnerName("Ewa Nowak")
+                .withEmail("Ewa@Nowak.pl")
                 .withBalance(new BigDecimal("2000.00"))
                 .build();
 
         Response secondCreateAccountResponse = accountClient.createAccount(secondAccountRequest);
         ResponseAssertions.assertStatus(secondCreateAccountResponse, 201);
+        Long secondAccountId = secondCreateAccountResponse.as(AccountResponse.class).id();
 
         UpdateAccountRequest request = AccountDataFactory.validUpdateAccount()
-                .withOwnerName("John Updated")
-                .withEmail(secondAccountRequest.email())
+                .withOwnerName("Ewa Kowalska")
+                .withEmail(firstAccountRequest.email())
                 .withBalance(new BigDecimal("1337.00"))
                 .build();
 
-        Response updatedAccountResponse = accountClient.updateAccount(request, firstAccountId);
+        Response updatedAccountResponse = accountClient.updateAccount(request, secondAccountId);
         ResponseAssertions.assertStatus(updatedAccountResponse, 409);
 
         ErrorAssertions.assertConflict(updatedAccountResponse.as(ErrorResponse.class));
 
-        Response getResponse = accountClient.getAccountById(firstAccountId);
+        Response getResponse = accountClient.getAccountById(secondAccountId);
         ResponseAssertions.assertStatus(getResponse, 200);
         AccountResponse fetchedAccount = getResponse.as(AccountResponse.class);
 
