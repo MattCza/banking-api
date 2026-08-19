@@ -5,6 +5,7 @@ import com.bank.api.assertions.ResponseAssertions;
 import com.bank.api.client.AccountClient;
 import com.bank.api.client.AuthClient;
 import com.bank.api.data.AccountDataFactory;
+import com.bank.api.data.JwtTestTokenFactory;
 import com.bank.api.data.LoginDataFactory;
 import com.bank.api.dto.request.CreateAccountRequest;
 import com.bank.api.dto.request.LoginRequest;
@@ -42,20 +43,8 @@ public class AccountSecurityIT {
     @Test
     @DisplayName("Should return 401 error response when attempting to create account with expired JWT")
     void shouldReturn401_WhenJwtIsExpired() throws InterruptedException {
-        LoginRequest loginRequest = LoginDataFactory.validAdmin();
-        String token = authClient.loginAndGetToken(loginRequest);
-        CreateAccountRequest firstRequest = AccountDataFactory.validCreateAccount().build();
-
-        // Token is still valid
-        Response firstResponse = accountClient.createAccount(firstRequest, token);
-        ResponseAssertions.assertStatus(firstResponse, 201);
-
-
-        // Token expires
-        Thread.sleep(6500);
-        CreateAccountRequest secondRequest = AccountDataFactory.validCreateAccount().build();
-        Response secondResponse = accountClient.createAccount(secondRequest, token);
-
-        assertUnauthorized(secondResponse);
+        String expiredToken = JwtTestTokenFactory.expiredToken("admin");
+        Response response = accountClient.createAccount(AccountDataFactory.validCreateAccount().build(), expiredToken);
+        assertUnauthorized(response);
     }
 }

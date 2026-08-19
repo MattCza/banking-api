@@ -1,7 +1,9 @@
 package com.bank.tests.account;
 
 import com.bank.api.client.AccountClient;
+import com.bank.api.client.AuthClient;
 import com.bank.api.data.AccountDataFactory;
+import com.bank.api.data.LoginDataFactory;
 import com.bank.api.dto.request.CreateAccountRequest;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.DisplayName;
@@ -20,12 +22,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class AccountConcurrencyIT {
 
     private final AccountClient accountClient = new AccountClient();
+    private final AuthClient authClient = new AuthClient();
 
     @Test
     @DisplayName("Should allow only one successful create when duplicate email requests run in parallel")
     void shouldReturn409Conflict_WhenParallelEmailIsDuplicate() throws Exception {
         int numberOfRequests = 10;
         CreateAccountRequest payload = AccountDataFactory.validCreateAccount().build();
+
+        String token = authClient.loginAndGetToken(LoginDataFactory.validAdmin());
 
         CountDownLatch ready = new CountDownLatch(numberOfRequests);
         CountDownLatch start = new CountDownLatch(1);
@@ -36,7 +41,7 @@ public class AccountConcurrencyIT {
                     .mapToObj(i -> executor.submit(() -> {
                         ready.countDown();
                         start.await();
-                        return accountClient.createAccount(payload);
+                        return accountClient.createAccount(payload, token);
                     }))
                     .toList();
 

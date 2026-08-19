@@ -6,9 +6,8 @@ import com.bank.api.assertions.ResponseAssertions;
 import com.bank.api.client.AccountClient;
 import com.bank.api.client.AuthClient;
 import com.bank.api.data.AccountDataFactory;
-import com.bank.api.data.LoginDataFactory;
+import com.bank.api.data.JwtTestTokenFactory;
 import com.bank.api.dto.request.CreateAccountRequest;
-import com.bank.api.dto.request.LoginRequest;
 import com.bank.api.dto.response.AccountResponse;
 import com.bank.api.dto.response.ErrorResponse;
 import io.restassured.response.Response;
@@ -112,18 +111,12 @@ public class GetAccountIT {
 
     @Test
     @DisplayName("Should return 401 when JWT is expired for get account")
-    void shouldReturn401_WhenJwtIsExpired() throws InterruptedException {
-        LoginRequest loginRequest = LoginDataFactory.validAdmin();
-        String token = authClient.loginAndGetToken(loginRequest);
-
+    void shouldReturn401_WhenJwtIsExpired() {
+        String expiredToken = JwtTestTokenFactory.expiredToken("admin");
+//        String expiredToken = JwtTestTokenFactory.validToken("admin");
         Long accountId = createAccountAndGetId();
-
-        Response firstResponse = accountClient.getAccountById(accountId, token);
-        ResponseAssertions.assertStatus(firstResponse, 200);
-
-        Thread.sleep(6500);
-        Response secondResponse = accountClient.getAccountById(accountId, token);
-
-        assertUnauthorized(secondResponse);
+        Response response = accountClient.getAccountById(accountId, expiredToken);
+//        response.then().log().all();
+        assertUnauthorized(response);
     }
 }

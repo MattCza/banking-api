@@ -56,7 +56,6 @@ public class PutAccountIT {
                 .withEmail("Adam@Nowak.pl")
                 .withBalance(new BigDecimal("1234.00"))
                 .build();
-
         Response firstCreateAccountResponse = accountClient.createAccount(firstAccountRequest);
         ResponseAssertions.assertStatus(firstCreateAccountResponse, 201);
 
@@ -65,7 +64,6 @@ public class PutAccountIT {
                 .withEmail("Ewa@Nowak.pl")
                 .withBalance(new BigDecimal("2000.00"))
                 .build();
-
         Response secondCreateAccountResponse = accountClient.createAccount(secondAccountRequest);
         ResponseAssertions.assertStatus(secondCreateAccountResponse, 201);
         Long secondAccountId = secondCreateAccountResponse.as(AccountResponse.class).id();
@@ -85,7 +83,7 @@ public class PutAccountIT {
         ResponseAssertions.assertStatus(getResponse, 200);
         AccountResponse fetchedAccount = getResponse.as(AccountResponse.class);
 
-        AccountAssertions.assertCreatedAccountResponse(fetchedAccount, firstAccountRequest);
+        AccountAssertions.assertCreatedAccountResponse(fetchedAccount, secondAccountRequest);
     }
 
     @Test
