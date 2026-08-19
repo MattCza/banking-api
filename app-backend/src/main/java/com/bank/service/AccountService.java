@@ -98,9 +98,10 @@ public class AccountService {
             return false;
         }
 
-        String normalizedMessage = message.toLowerCase();
+        String normalizedMessage = message.toLowerCase(Locale.ROOT);
 
-        return message.contains("UK_ACCOUNTS_EMAIL");
+        // Constraint names may be returned in lowercase, so match the normalized value
+        return normalizedMessage.contains("uk_accounts_email");
     }
 
     private String normalizeEmail(String email) {

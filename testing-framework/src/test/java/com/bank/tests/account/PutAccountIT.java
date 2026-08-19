@@ -22,21 +22,12 @@ public class PutAccountIT {
     @Test
     @DisplayName("Should update account details when account exists")
     void shouldUpdateAccount_WhenAccountExists() {
-        Response createAccountResponse = accountClient.createAccount(
-                AccountDataFactory.validCreateAccount()
-                        .withOwnerName("John Doe")
-                        .withEmail("John@Doe.xyz")
-                        .withBalance(new BigDecimal("1234.00"))
-                        .build());
+        Response createAccountResponse = accountClient.createAccount(AccountDataFactory.validCreateAccount().build());
 
         ResponseAssertions.assertStatus(createAccountResponse, 201);
         Long createAccountId = createAccountResponse.as(AccountResponse.class).id();
 
-        UpdateAccountRequest request = AccountDataFactory.validUpdateAccount()
-                .withOwnerName("Jane Doe")
-                .withEmail("Jane@Doe.xyz")
-                .withBalance(new BigDecimal("1337.00"))
-                .build();
+        UpdateAccountRequest request = AccountDataFactory.validUpdateAccount().build();
 
         Response updatedAccountResponse = accountClient.updateAccount(request, createAccountId);
         ResponseAssertions.assertStatus(updatedAccountResponse, 200);
@@ -51,28 +42,17 @@ public class PutAccountIT {
     @Test
     @DisplayName("Should return 409 when updating account with email belonging to another account")
     void shouldReturn409_WhenEmailBelongsToAnotherAccount() {
-        CreateAccountRequest firstAccountRequest = AccountDataFactory.validCreateAccount()
-                .withOwnerName("Adam Nowak")
-                .withEmail("Adam@Nowak.pl")
-                .withBalance(new BigDecimal("1234.00"))
-                .build();
+        CreateAccountRequest firstAccountRequest = AccountDataFactory.validCreateAccount().build();
         Response firstCreateAccountResponse = accountClient.createAccount(firstAccountRequest);
         ResponseAssertions.assertStatus(firstCreateAccountResponse, 201);
 
-        CreateAccountRequest secondAccountRequest = AccountDataFactory.validCreateAccount()
-                .withOwnerName("Ewa Nowak")
-                .withEmail("Ewa@Nowak.pl")
-                .withBalance(new BigDecimal("2000.00"))
-                .build();
+        CreateAccountRequest secondAccountRequest = AccountDataFactory.validCreateAccount().build();
         Response secondCreateAccountResponse = accountClient.createAccount(secondAccountRequest);
         ResponseAssertions.assertStatus(secondCreateAccountResponse, 201);
         Long secondAccountId = secondCreateAccountResponse.as(AccountResponse.class).id();
 
         UpdateAccountRequest request = AccountDataFactory.validUpdateAccount()
-                .withOwnerName("Ewa Kowalska")
-                .withEmail(firstAccountRequest.email())
-                .withBalance(new BigDecimal("1337.00"))
-                .build();
+                .withEmail(firstAccountRequest.email()).build();
 
         Response updatedAccountResponse = accountClient.updateAccount(request, secondAccountId);
         ResponseAssertions.assertStatus(updatedAccountResponse, 409);
@@ -89,21 +69,14 @@ public class PutAccountIT {
     @Test
     @DisplayName("Should update account successfully when email remains unchanged")
     void shouldUpdateAccount_WhenEmailRemainsUnchanged() {
-        CreateAccountRequest createAccountRequest = AccountDataFactory.validCreateAccount()
-                .withOwnerName("Joe Doe")
-                .withEmail("Joe@Doe.xyz")
-                .withBalance(new BigDecimal("1111.00"))
-                .build();
+        CreateAccountRequest createAccountRequest = AccountDataFactory.validCreateAccount().build();
 
         Response createAccountResponse = accountClient.createAccount(createAccountRequest);
         ResponseAssertions.assertStatus(createAccountResponse, 201);
         Long createAccountId = createAccountResponse.as(AccountResponse.class).id();
 
         UpdateAccountRequest request = AccountDataFactory.validUpdateAccount()
-                .withOwnerName("John Doe")
-                .withEmail("Joe@Doe.xyz")
-                .withBalance(new BigDecimal("1337.00"))
-                .build();
+                .withEmail(createAccountRequest.email()).build();
 
         Response updatedAccountResponse = accountClient.updateAccount(request, createAccountId);
         ResponseAssertions.assertStatus(updatedAccountResponse, 200);

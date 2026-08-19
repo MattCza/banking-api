@@ -3,6 +3,8 @@ package com.bank.api.data;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.bank.api.data.BaseAccountRequestBuilder.FAKER;
+
 public final class AccountDataFactory {
     private AccountDataFactory() {
     }
@@ -24,7 +26,7 @@ public final class AccountDataFactory {
         int domainLength = length - localPartLength - 1;
         int headLength = domainLength - 3;
 
-        return "b".repeat(localPartLength) + "@" + buildDomainHead(headLength) + ".pl";
+        return FAKER.regexify("[a-z0-9]{" + localPartLength + "}") + "@" + buildDomainHead(headLength) + ".pl";
     }
 
     private static String buildDomainHead(int targetLength) {
