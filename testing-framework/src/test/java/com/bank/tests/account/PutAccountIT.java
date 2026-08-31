@@ -13,8 +13,6 @@ import io.restassured.response.Response;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
-
 public class PutAccountIT {
 
     private final AccountClient accountClient = new AccountClient();

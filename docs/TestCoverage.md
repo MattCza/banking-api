@@ -2,6 +2,17 @@
 
 This document lists the API scenarios currently covered by automation in the repository.
 
+## Test Coverage Approach
+
+For each endpoint, the test suite aims to cover the following areas:
+
+- **Happy Path** – valid request and expected successful response
+- **Validation** – null, empty/blank, invalid format, and boundary values
+- **Business Rules** – business-specific constraints such as duplicate email handling
+- **Security** – missing, invalid, and expired JWT
+- **Error Handling** – correct HTTP status code and error response structure
+- **Negative Scenarios** – invalid input, non-existing resources, and malformed requests
+
 ## Authentication
 
 ### POST /api/v1/auth/login
@@ -83,3 +94,7 @@ The following areas are not yet covered and are good candidates for future work:
 - PUT authorization and token edge cases
 - transfer and transaction flows
 - performance and resilience testing
+- API response schema validation
+- Additional concurrency and race-condition scenarios
+- CI/CD integration
+- Test reporting and test execution history

@@ -25,14 +25,6 @@ The main goals of the strategy are to:
 - authorization checks for protected endpoints
 - duplicate email and concurrency behavior
 
-### Out of Scope
-
-- UI testing
-- performance, load, and stress testing
-- penetration testing
-- accessibility testing
-- consumer-driven contract tooling
-
 ## 3. Test Levels
 
 | Test Level | Current Status |
@@ -194,4 +186,4 @@ Current gaps that are intentionally left for future iterations:
 
 The Money API test strategy is designed to demonstrate practical QA and backend engineering skills in a portfolio-ready project.
 
-It prioritises the highest-risk API behaviours, keeps the test suite maintainable through reusable framework layers, and supports repeatable execution in local and CI environments.
+It prioritizes the highest-risk API behaviors, keeps the test suite maintainable through reusable framework layers, and supports repeatable execution in local and CI environments.

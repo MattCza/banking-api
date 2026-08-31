@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
-class AccountValidationIT {
+class PostAccountValidationIT {
 
     AccountClient accountClient = new AccountClient();
 
