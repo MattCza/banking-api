@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -112,6 +113,34 @@ class AccountServiceTest {
                 .hasMessageContaining("taken@doe.xyz");
 
         verify(accountRepository, never()).saveAndFlush(any(Account.class));
+    }
+
+    @Test
+    void shouldThrowDuplicateEmailException_WhenSaveRaceLosesToConcurrentInsert() {
+        CreateAccountRequest request = new CreateAccountRequest("John Doe", "john.doe@example.com", new BigDecimal("100.50"));
+
+        when(accountRepository.existsByEmail("john.doe@example.com")).thenReturn(false);
+        when(accountRepository.saveAndFlush(any(Account.class))).thenThrow(
+                new DataIntegrityViolationException("insert failed",
+                        new RuntimeException("duplicate key value violates unique constraint \"uk_accounts_email\"")));
+
+        assertThatThrownBy(() -> accountService.createAccount(request))
+                .isInstanceOf(DuplicateEmailException.class)
+                .hasMessageContaining("john.doe@example.com");
+    }
+
+    @Test
+    void shouldRethrowOriginalException_WhenSaveFailsForUnrelatedConstraint() {
+        CreateAccountRequest request = new CreateAccountRequest("John Doe", "john.doe@example.com", new BigDecimal("100.50"));
+
+        DataIntegrityViolationException unrelatedViolation = new DataIntegrityViolationException("insert failed",
+                new RuntimeException("null value in column \"owner_name\" violates not-null constraint"));
+
+        when(accountRepository.existsByEmail("john.doe@example.com")).thenReturn(false);
+        when(accountRepository.saveAndFlush(any(Account.class))).thenThrow(unrelatedViolation);
+
+        assertThatThrownBy(() -> accountService.createAccount(request))
+                .isSameAs(unrelatedViolation);
     }
 
     @Test
