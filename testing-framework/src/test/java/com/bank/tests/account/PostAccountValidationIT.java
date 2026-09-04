@@ -12,10 +12,12 @@ import com.bank.api.dto.response.ErrorResponse;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
+@Tag("validation")
 class PostAccountValidationIT {
 
     AccountClient accountClient = new AccountClient();

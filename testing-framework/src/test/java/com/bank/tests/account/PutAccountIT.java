@@ -11,13 +11,16 @@ import com.bank.api.dto.response.AccountResponse;
 import com.bank.api.dto.response.ErrorResponse;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+@Tag("functional")
 public class PutAccountIT {
 
     private final AccountClient accountClient = new AccountClient();
 
     @Test
+    @Tag("smoke")
     @DisplayName("Should update account details when account exists")
     void shouldUpdateAccount_WhenAccountExists() {
         Response createAccountResponse = accountClient.createAccount(AccountDataFactory.validCreateAccount().build());

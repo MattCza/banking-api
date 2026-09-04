@@ -12,13 +12,16 @@ import com.bank.api.dto.response.ErrorResponse;
 import com.bank.api.dto.response.LoginResponse;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+@Tag("functional")
 public class LoginIT {
 
     private final AuthClient authClient = new AuthClient();
 
     @Test
+    @Tag("smoke")
     @DisplayName("Should login successfully when credentials are valid")
     public void shouldLoginSuccessfully_WhenCredentialsAreValid() {
         // Arrange - AAA

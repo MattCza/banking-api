@@ -11,13 +11,11 @@ import com.bank.api.dto.request.UpdateAccountRequest;
 import com.bank.api.dto.response.AccountResponse;
 import com.bank.api.dto.response.ErrorResponse;
 import io.restassured.response.Response;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.math.BigDecimal;
 
+@Tag("validation")
 public class PutAccountValidationIT {
 
     AccountClient accountClient = new AccountClient();
