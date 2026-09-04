@@ -5,7 +5,7 @@ import com.bank.api.assertions.ResponseAssertions;
 import com.bank.api.client.AccountClient;
 import com.bank.api.data.AccountDataFactory;
 import com.bank.api.data.JwtTestTokenFactory;
-import com.bank.api.dto.response.AccountResponse;
+import com.bank.api.dto.request.CreateAccountRequest;
 import com.bank.api.dto.response.ErrorResponse;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.DisplayName;
@@ -13,16 +13,10 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 @Tag("security")
-public class DeleteAccountSecurityIT {
+public class PostAccountSecurityIT {
 
     private final AccountClient accountClient = new AccountClient();
 
-
-    private Long createAccountAndGetId() {
-        Response response = accountClient.createAccount(AccountDataFactory.validCreateAccount().build());
-        ResponseAssertions.assertStatus(response, 201);
-        return response.as(AccountResponse.class).id();
-    }
 
     private void assertUnauthorized(Response response) {
         ResponseAssertions.assertStatus(response, 401);
@@ -32,28 +26,27 @@ public class DeleteAccountSecurityIT {
 
 
     @Test
-    @DisplayName("Should return 401 when JWT is missing for delete account")
+    @DisplayName("Should return 401 when JWT is missing")
     void shouldReturn401_WhenJwtIsMissing() {
-        Long accountId = createAccountAndGetId();
-        Response response = accountClient.deleteAccountById(accountId, null);
-        response.then().log().all();
+        CreateAccountRequest request = AccountDataFactory.validCreateAccount().build();
+        Response response = accountClient.createAccount(request, null);
         assertUnauthorized(response);
     }
 
     @Test
-    @DisplayName("Should return 401 when JWT is invalid for delete account")
+    @DisplayName("Should return 401 when JWT is invalid")
     void shouldReturn401_WhenJwtIsInvalid() {
-        Long accountId = createAccountAndGetId();
-        Response response = accountClient.deleteAccountById(accountId, "invalid JWT");
+        CreateAccountRequest request = AccountDataFactory.validCreateAccount().build();
+        Response response = accountClient.createAccount(request, "invalid JWT");
         assertUnauthorized(response);
     }
 
     @Test
-    @DisplayName("Should return 401 when JWT is expired for delete account")
-    void shouldReturn401_WhenJwtIsExpired() {
+    @DisplayName("Should return 401 error response when attempting to create account with expired JWT")
+    void shouldReturn401_WhenJwtIsExpired() throws InterruptedException {
+        CreateAccountRequest request = AccountDataFactory.validCreateAccount().build();
         String expiredToken = JwtTestTokenFactory.expiredToken("admin");
-        Long accountId = createAccountAndGetId();
-        Response response = accountClient.deleteAccountById(accountId, expiredToken);
+        Response response = accountClient.createAccount(request, expiredToken);
         assertUnauthorized(response);
     }
 }

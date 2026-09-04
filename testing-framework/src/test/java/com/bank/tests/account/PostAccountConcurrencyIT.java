@@ -7,6 +7,7 @@ import com.bank.api.data.LoginDataFactory;
 import com.bank.api.dto.request.CreateAccountRequest;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -19,7 +20,8 @@ import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class AccountConcurrencyIT {
+@Tag("concurrency")
+public class PostAccountConcurrencyIT {
 
     private final AccountClient accountClient = new AccountClient();
     private final AuthClient authClient = new AuthClient();
