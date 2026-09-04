@@ -32,9 +32,17 @@ pipeline {
             }
         }
 
-        stage('Run API Tests') {
+        stage('Smoke Tests') {
             steps {
-                bat 'mvn -pl testing-framework -am verify -Denv=local'
+                bat 'mvn -pl testing-framework -am verify -Denv=local -Dgroups=smoke'
+                bat 'if exist testing-framework\\target\\failsafe-reports-smoke rmdir /s /q testing-framework\\target\\failsafe-reports-smoke'
+                bat 'xcopy /e /i testing-framework\\target\\failsafe-reports testing-framework\\target\\failsafe-reports-smoke'
+            }
+        }
+
+        stage('Regression Tests') {
+            steps {
+                bat 'mvn -pl testing-framework -am verify -Denv=local -DexcludedGroups=smoke'
             }
         }
     }
@@ -42,8 +50,8 @@ pipeline {
     post {
         always {
             bat 'docker compose logs --no-color > docker-compose.log || exit /b 0'
-            junit testResults: 'testing-framework/target/failsafe-reports/*.xml'
-            archiveArtifacts artifacts: 'docker-compose.log,testing-framework/target/failsafe-reports/*', fingerprint: true
+            junit testResults: 'testing-framework/target/failsafe-reports-smoke/*.xml,testing-framework/target/failsafe-reports/*.xml'
+            archiveArtifacts artifacts: 'docker-compose.log,testing-framework/target/failsafe-reports-smoke/*,testing-framework/target/failsafe-reports/*', fingerprint: true
             bat 'docker compose down -v --remove-orphans || exit /b 0'
             cleanWs()
         }
