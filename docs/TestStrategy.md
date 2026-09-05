@@ -2,9 +2,12 @@
 
 ## 1. Purpose
 
-This document describes the testing strategy for the Money API project.
+This document describes the testing strategy for the project.
 
-The system under test is a Spring Boot banking API secured with JWT. The automated test layer is implemented as a separate REST Assured framework to verify business behaviour, validation, security, and API contracts through the public interface.
+The system under test is a Spring Boot banking API secured with JWT. 
+The automated test layer is implemented as a separate REST Assured framework 
+to verify business behavior, validation, security, and API contracts through the 
+public interface.
 
 The main goals of the strategy are to:
 
@@ -12,6 +15,7 @@ The main goals of the strategy are to:
 - detect regressions quickly
 - validate security and error handling
 - keep test execution repeatable across local and CI environments
+
 
 ## 2. Scope
 
@@ -25,16 +29,20 @@ The main goals of the strategy are to:
 - authorization checks for protected endpoints
 - duplicate email and concurrency behavior
 
+
 ## 3. Test Levels
 
-| Test Level | Current Status |
-|------------|----------------|
-| Unit Tests | Implemented for selected service logic |
-| API Integration Tests | Implemented |
-| End-to-End Tests | Planned |
-| Performance Tests | Planned |
+| Test Level            | Current Status                         |
+|-----------------------|----------------------------------------|
+| Unit Tests            | Implemented for selected service logic |
+| API Integration Tests | Implemented                            |
+| End-to-End Tests      | Planned                                |
+| Performance Tests     | Planned                                |
 
-The primary focus of the project is API integration testing. Unit tests are used to protect core service logic and edge cases at lower cost.
+The primary focus of the project is API integration testing.  
+Unit tests are used to protect core service logic and edge cases at lower cost, 
+following the Shift-Left approach by identifying defects early in the SDLC.
+
 
 ## 4. Test Types
 
@@ -47,6 +55,7 @@ The suite combines:
 - regression testing
 - API contract testing
 - concurrency testing for high-risk scenarios
+
 
 ## 5. Test Design Approach
 
@@ -106,6 +115,9 @@ Covered areas:
 - successful update of account data
 - update with unchanged email
 - conflict when email belongs to another account
+- duplicate email under parallel requests
+- validation of owner name, email, and balance
+- protected endpoint authorization checks
 
 `DELETE /api/v1/accounts/{id}`
 
@@ -117,14 +129,28 @@ Covered areas:
 - invalid path parameter
 - protected endpoint authorization checks
 
+## 6a. Test Categorization
+
+Test classes are tagged with JUnit 5 `@Tag` with:
+
+- **category** – `functional`, `validation`, `security`, or `concurrency`, describing type of risk covered by the tests.
+- **execution tier** – `smoke` - one happy-path test per resource (login, create/get/update/delete account), identifying it as part of a small, fast subset
+
+This allows the same test suite be sliced in two independent ways:  
+by content (`-Dgroups=security`) or by how urgently it needs to run (`-Dgroups=smoke`). No test duplication or package restructuring is required.
+
+
 ## 7. Test Data Strategy
 
-The framework uses both static and dynamic test data.
+The framework relies primarily on dynamically generated test data. Each test run creates new, unique data at runtime, allowing the same test suite to be executed consistently across different environments without relying on pre-existing data or configuration.
+
 
 ### Static Data
 
+Static data is used for application configuration rather than test scenarios:
 - seeded local users for authentication
 - environment-specific base URLs and ports
+
 
 ### Dynamic Data
 
@@ -138,11 +164,11 @@ Dynamic test data reduces collisions between test runs and improves repeatabilit
 
 ## 8. Test Environments
 
-| Environment | Purpose |
-|-------------|---------|
-| Local | developer execution against a locally running backend |
-| Docker | repeatable local integration setup |
-| Jenkins | continuous integration execution |
+| Environment | Purpose                                               |
+|-------------|-------------------------------------------------------|
+| Local       | developer execution against a locally running backend |
+| Docker      | repeatable local integration setup                    |
+| Jenkins     | continuous integration execution                      |
 
 Environment selection is controlled through Maven properties:
 
@@ -168,15 +194,20 @@ mvn -pl testing-framework -am verify -Denv=local
 
 ## 10. CI Execution
 
-The project includes Jenkins-based CI for running the API regression suite. The repository also includes a GitHub Actions workflow for fast verification of the build and unit tests on GitHub.
+The project includes Jenkins-based CI for running the API test suite, split into two sequential stages:
 
-The CI objective is to provide fast feedback after code changes and prevent obvious regressions before merge or publication.
+1. **Smoke Tests** (`-Dgroups=smoke`) – a small, fast subset covering one happy path per resource. If this stage fails, the pipeline stops immediately.
+2. **Regression Tests** (`-DexcludedGroups=smoke`) – the full validation, security, and concurrency suite, run only after smoke passes.
+
+The repository also includes a GitHub Actions workflow for fast verification of the build and unit tests on GitHub.
+
+The CI objective is to provide fast feedback after code changes, fail quickly on broken core functionality, and prevent obvious regressions before merge or publication.
 
 ## 11. Risks and Future Work
 
 Current gaps that are intentionally left for future iterations:
 
-- broader PUT validation and security coverage
+- role-based authorization (endpoints only verify JWT presence today, not the caller's role)
 - transfer and transaction domain scenarios
 - performance and resilience testing
 - richer reporting and quality gates
