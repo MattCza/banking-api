@@ -96,7 +96,7 @@ Covered areas:
 - validation of owner name, email, and balance
 - duplicate email handling
 - duplicate email under parallel requests
-- protected endpoint authorization checks
+- role-based access control (only ADMIN may create accounts)
 - response contract validation
 
 `GET /api/v1/accounts/{id}`
@@ -106,7 +106,7 @@ Covered areas:
 - fetch existing account
 - account not found
 - invalid path parameter
-- protected endpoint authorization checks
+- read access permitted for any authenticated role
 
 `PUT /api/v1/accounts/{id}`
 
@@ -117,7 +117,7 @@ Covered areas:
 - conflict when email belongs to another account
 - duplicate email under parallel requests
 - validation of owner name, email, and balance
-- protected endpoint authorization checks
+- role-based access control (only ADMIN may update accounts)
 
 `DELETE /api/v1/accounts/{id}`
 
@@ -127,7 +127,8 @@ Covered areas:
 - verify resource is not available after deletion
 - account not found
 - invalid path parameter
-- protected endpoint authorization checks
+- role-based access control (only ADMIN may delete accounts)
+
 
 ## 6a. Test Categorization
 
@@ -207,7 +208,6 @@ The CI objective is to provide fast feedback after code changes, fail quickly on
 
 Current gaps that are intentionally left for future iterations:
 
-- role-based authorization (endpoints only verify JWT presence today, not the caller's role)
 - transfer and transaction domain scenarios
 - performance and resilience testing
 - richer reporting and quality gates
