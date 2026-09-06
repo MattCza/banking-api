@@ -8,6 +8,7 @@ import com.bank.service.AccountService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,6 +23,7 @@ public class AccountController {
 
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AccountResponse> createAccount(@Valid @RequestBody CreateAccountRequest request) {
         Account createdAccount = accountService.createAccount(request);
 
@@ -52,6 +54,7 @@ public class AccountController {
 
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteAccountById(@PathVariable("id") Long id) {
         accountService.deleteAccountById(id);
@@ -59,6 +62,7 @@ public class AccountController {
 
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AccountResponse> updateAccountById(@PathVariable("id") Long id, @Valid @RequestBody UpdateAccountRequest request) {
         Account updatedAccount = accountService.updateAccount(id, request);
 

@@ -3,8 +3,11 @@ package com.bank.tests.account;
 import com.bank.api.assertions.ErrorAssertions;
 import com.bank.api.assertions.ResponseAssertions;
 import com.bank.api.client.AccountClient;
+import com.bank.api.client.AuthClient;
 import com.bank.api.data.AccountDataFactory;
 import com.bank.api.data.JwtTestTokenFactory;
+import com.bank.api.data.LoginDataFactory;
+import com.bank.api.dto.request.CreateAccountRequest;
 import com.bank.api.dto.request.UpdateAccountRequest;
 import com.bank.api.dto.response.AccountResponse;
 import com.bank.api.dto.response.ErrorResponse;
@@ -59,4 +62,20 @@ public class PutAccountSecurityIT {
         Response response = accountClient.updateAccount(request, id, expiredToken);
         assertUnauthorized(response);
     }
+
+    @Test
+    @DisplayName("Should return 403 when regular user attempts to update an account")
+    public void shouldReturn403_WhenRegularUserAttemptsToUpdateAccount() {
+        Long id = createAccountAndGetId();
+        UpdateAccountRequest request = AccountDataFactory.validUpdateAccount().build();
+        AuthClient authClient = new AuthClient();
+        String userToken = authClient.loginAndGetToken(LoginDataFactory.validUser());
+        Response response = accountClient.updateAccount(request, id, userToken);
+
+        ResponseAssertions.assertJsonResponse(response, 403);
+
+        ErrorResponse error = response.as(ErrorResponse.class);
+        ErrorAssertions.assertForbidden(error);
+    }
+
 }

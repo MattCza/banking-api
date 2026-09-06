@@ -58,5 +58,9 @@ public final class ErrorAssertions {
         assertError(actual, 415, "UNSUPPORTED_MEDIA_TYPE","Unsupported Content-Type");
     }
 
+    public static void assertForbidden(ErrorResponse actual) {
+        assertError(actual, 403, "FORBIDDEN","Access denied");
+    }
+
 
 }

@@ -1,12 +1,18 @@
 package com.bank.tests.account;
 
+import com.bank.api.assertions.AuthAssertions;
 import com.bank.api.assertions.ErrorAssertions;
 import com.bank.api.assertions.ResponseAssertions;
 import com.bank.api.client.AccountClient;
+import com.bank.api.client.AuthClient;
 import com.bank.api.data.AccountDataFactory;
 import com.bank.api.data.JwtTestTokenFactory;
+import com.bank.api.data.LoginDataFactory;
 import com.bank.api.dto.request.CreateAccountRequest;
+import com.bank.api.dto.request.LoginRequest;
+import com.bank.api.dto.request.UpdateAccountRequest;
 import com.bank.api.dto.response.ErrorResponse;
+import com.bank.api.dto.response.LoginResponse;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -49,4 +55,19 @@ public class PostAccountSecurityIT {
         Response response = accountClient.createAccount(request, expiredToken);
         assertUnauthorized(response);
     }
+
+    @Test
+    @DisplayName("Should return 403 when regular user attempts to create an account")
+    public void shouldReturn403_WhenRegularUserAttemptsToCreateAccount() {
+        CreateAccountRequest request = AccountDataFactory.validCreateAccount().build();
+        AuthClient authClient = new AuthClient();
+        String userToken = authClient.loginAndGetToken(LoginDataFactory.validUser());
+        Response response = accountClient.createAccount(request, userToken);
+
+        ResponseAssertions.assertJsonResponse(response, 403);
+
+        ErrorResponse error = response.as(ErrorResponse.class);
+        ErrorAssertions.assertForbidden(error);
+    }
+
 }

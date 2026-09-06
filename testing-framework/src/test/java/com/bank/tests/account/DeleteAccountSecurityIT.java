@@ -3,8 +3,11 @@ package com.bank.tests.account;
 import com.bank.api.assertions.ErrorAssertions;
 import com.bank.api.assertions.ResponseAssertions;
 import com.bank.api.client.AccountClient;
+import com.bank.api.client.AuthClient;
 import com.bank.api.data.AccountDataFactory;
 import com.bank.api.data.JwtTestTokenFactory;
+import com.bank.api.data.LoginDataFactory;
+import com.bank.api.dto.request.CreateAccountRequest;
 import com.bank.api.dto.response.AccountResponse;
 import com.bank.api.dto.response.ErrorResponse;
 import io.restassured.response.Response;
@@ -56,4 +59,19 @@ public class DeleteAccountSecurityIT {
         Response response = accountClient.deleteAccountById(accountId, expiredToken);
         assertUnauthorized(response);
     }
+
+    @Test
+    @DisplayName("Should return 403 when regular user attempts to delete an account")
+    public void shouldReturn403_WhenRegularUserAttemptsToDeleteAccount() {
+        Long accountId = createAccountAndGetId();
+        AuthClient authClient = new AuthClient();
+        String userToken = authClient.loginAndGetToken(LoginDataFactory.validUser());
+        Response response = accountClient.deleteAccountById(accountId, userToken);
+
+        ResponseAssertions.assertJsonResponse(response, 403);
+
+        ErrorResponse error = response.as(ErrorResponse.class);
+        ErrorAssertions.assertForbidden(error);
+    }
+
 }
