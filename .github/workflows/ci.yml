@@ -5,11 +5,10 @@ on:
     branches:
       - main
       - master
-      - "codex/**"
   pull_request:
 
 jobs:
-  build-and-test:
+  unit-tests:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,5 +22,142 @@ jobs:
           java-version: "21"
           cache: maven
 
-      - name: Run unit tests
-        run: mvn -B test
+      - name: Run unit tests with coverage check
+        run: mvn -B -pl app-backend test jacoco:check@check
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: app-backend/target/site/jacoco/
+
+  integration-smoke:
+    needs: unit-tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: banking_db
+          POSTGRES_USER: postgres_user
+          POSTGRES_PASSWORD: secure_bank_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DB_URL: jdbc:postgresql://localhost:5432/banking_db
+      DB_USERNAME: postgres_user
+      DB_PASSWORD: secure_bank_password
+      JWT_SECRET: 7a6e7d2f16fcb64b1cb0e5d0a4f31dbb2d80f8b4e0f2db68c94b9
+      JWT_EXPIRATION: 3600000
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Build backend
+        run: mvn -B -pl app-backend -am clean package -DskipTests
+
+      - name: Start backend
+        run: |
+          nohup java -jar app-backend/target/app-backend-1.0-SNAPSHOT.jar --spring.profiles.active=local > backend.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:8080/actuator/health > /dev/null; then
+              echo "Backend is up"
+              exit 0
+            fi
+            echo "Waiting for backend... ($i/30)"
+            sleep 5
+          done
+          echo "Backend did not become ready in time"
+          cat backend.log
+          exit 1
+
+      - name: Run smoke tests
+        run: mvn -B -pl testing-framework -am verify -Denv=local -Dgroups=smoke
+
+      - name: Upload smoke test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-results
+          path: testing-framework/target/failsafe-reports/
+
+  integration-regression:
+    needs: integration-smoke
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: banking_db
+          POSTGRES_USER: postgres_user
+          POSTGRES_PASSWORD: secure_bank_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DB_URL: jdbc:postgresql://localhost:5432/banking_db
+      DB_USERNAME: postgres_user
+      DB_PASSWORD: secure_bank_password
+      JWT_SECRET: 7a6e7d2f16fcb64b1cb0e5d0a4f31dbb2d80f8b4e0f2db68c94b9
+      JWT_EXPIRATION: 3600000
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Build backend
+        run: mvn -B -pl app-backend -am clean package -DskipTests
+
+      - name: Start backend
+        run: |
+          nohup java -jar app-backend/target/app-backend-1.0-SNAPSHOT.jar --spring.profiles.active=local > backend.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:8080/actuator/health > /dev/null; then
+              echo "Backend is up"
+              exit 0
+            fi
+            echo "Waiting for backend... ($i/30)"
+            sleep 5
+          done
+          echo "Backend did not become ready in time"
+          cat backend.log
+          exit 1
+
+      - name: Run regression tests
+        run: mvn -B -pl testing-framework -am verify -Denv=local -DexcludedGroups=smoke
+
+      - name: Upload regression test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: regression-test-results
+          path: testing-framework/target/failsafe-reports/

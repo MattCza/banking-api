@@ -59,11 +59,9 @@ Money
 ## Running Locally
 
 1. Prepare local configuration:
-
 ```bash
 copy .env.example .env
 ```
-
 2. Start the database and backend with Docker:
 
 ```bash
