@@ -98,6 +98,13 @@ jobs:
           name: smoke-test-results
           path: testing-framework/target/failsafe-reports/
 
+      - name: Upload allure results (smoke)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-smoke
+          path: testing-framework/target/allure-results/
+
 
   integration-regression:
     needs: integration-smoke
@@ -163,3 +170,60 @@ jobs:
         with:
           name: regression-test-results
           path: testing-framework/target/failsafe-reports/
+
+      - name: Upload allure results (regression)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-regression
+          path: testing-framework/target/allure-results/
+
+  publish-report:
+    needs: [integration-smoke, integration-regression]
+    if: always()
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Download smoke allure results
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-results-smoke
+          path: allure-results
+
+      - name: Download regression allure results
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-results-regression
+          path: allure-results
+
+      - name: Install Allure CLI
+        run: |
+          curl -o allure.zip -Ls https://github.com/allure-framework/allure2/releases/download/2.46.1/allure-2.46.1.zip
+          unzip -q allure.zip
+          echo "$PWD/allure-2.46.1/bin" >> "$GITHUB_PATH"
+
+      - name: Generate Allure report
+        run: allure generate allure-results -o allure-report --clean
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload report for Pages
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: allure-report
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
