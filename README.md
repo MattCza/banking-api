@@ -13,7 +13,7 @@ The goal of the project is to show practical backend and QA engineering skills t
 
 The repository is split into two modules:
 
-- `app-backend` - Spring Boot REST API with JWT authentication, Flyway migrations, and PostgreSQL support
+- `app-backend` - Spring Boot REST API with JWT authentication, role-based authorization, Flyway migrations, and PostgreSQL support
 - `testing-framework` - REST Assured integration test suite with reusable clients, DTOs, builders, and assertions
 
 Supporting project files:
@@ -22,12 +22,13 @@ Supporting project files:
 - `docs/TestCoverage.md`
 - `docker-compose.yml`
 - `Jenkinsfile`
+- `.github/workflows/ci.yml`
 
 ## Stack
 
 - Java 21
 - Spring Boot 3
-- Spring Security
+- Spring Security (JWT + role-based method security)
 - REST Assured
 - JUnit 5
 - AssertJ
@@ -36,16 +37,26 @@ Supporting project files:
 - Flyway
 - Docker Compose
 - Jenkins
+- GitHub Actions
+- Jacoco
+- Allure Report
 - Maven
 
 ## Key Features
 
 - JWT-secured authentication flow
+- Role-based authorization (`ADMIN` vs `USER`) on account mutation endpoints
 - Account create, read, update, and delete endpoints
 - Validation and error contract handling
-- Duplicate email protection
-- Parallel request coverage for concurrency behavior
+- Duplicate email protection, including under concurrent requests
 - Multi-module Maven structure for backend and test automation
+
+## Quality & CI/CD
+
+- Tests are tagged: **category** (`functional`, `validation`, `security`, `concurrency`) and **execution tier** (`smoke`)
+- Both Jenkins and GitHub Actions run a two-stage pipeline: a fast `smoke` gate, and if it passes then the full regression suite
+- Unit tests uses a Jacoco line-coverage gate on `app-backend`
+- Every CI run publishes an [Allure report](https://mattcza.github.io/banking-api/) combining smoke and regression results
 
 ## Project Structure
 
@@ -53,7 +64,8 @@ Supporting project files:
 Money
 |-- app-backend
 |-- testing-framework
-`-- docs
+|-- docs
+|-- .github/workflows
 ```
 
 ## Running Locally
@@ -84,8 +96,8 @@ docker compose down -v --remove-orphans
 
 The project seeds demo users for development and test scenarios:
 
-- `admin / admin123`
-- `user / user123`
+- `admin / admin123` - role `ADMIN`, can create, update, and delete accounts
+- `user / user123` - role `USER`, read-only access to accounts
 
 These credentials are intended for local and CI usage only.
 
@@ -101,12 +113,14 @@ These credentials are intended for local and CI usage only.
 - Authentication happy-path and negative scenarios
 - Account create, get, delete, and update flows
 - Validation and error contract checks
-- JWT security coverage for protected endpoints
-- Duplicate email concurrency coverage
+- JWT security coverage (missing/invalid/expired tokens) for every endpoint
+- Role-based authorization coverage (403 for the wrong role, success for the right one)
+- Duplicate email concurrency coverage on both create and update
 
 ## Next Improvements
 
-- add more unit test coverage around service and security logic
-- expand PUT endpoint validation and authorization coverage
-- move CI visibility to GitHub Actions in addition to Jenkins
-- add transfer and transaction scenarios
+- unit tests for `JwtAuthenticationFilter` (currently only covered indirectly via integration tests)
+- OpenAPI spec and contract/schema validation
+- Testcontainers-based test data lifecycle, replacing the shared long-lived local database
+- parallel test execution
+- transfer and transaction scenarios
