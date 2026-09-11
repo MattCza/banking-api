@@ -32,6 +32,7 @@ jobs:
           name: jacoco-report
           path: app-backend/target/site/jacoco/
 
+
   integration-smoke:
     needs: unit-tests
     runs-on: ubuntu-latest
@@ -96,6 +97,7 @@ jobs:
         with:
           name: smoke-test-results
           path: testing-framework/target/failsafe-reports/
+
 
   integration-regression:
     needs: integration-smoke
