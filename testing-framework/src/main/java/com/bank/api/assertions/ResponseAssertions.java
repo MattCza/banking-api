@@ -1,7 +1,7 @@
 package com.bank.api.assertions;
 
 import io.restassured.response.Response;
-import org.apache.http.entity.ContentType;
+import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -9,6 +9,11 @@ public final class ResponseAssertions {
 
     private ResponseAssertions() {
 
+    }
+
+
+    public static void assertMatchesSchema(Response response, String classpathSchemaPath) {
+        response.then().assertThat().body(matchesJsonSchemaInClasspath(classpathSchemaPath));
     }
 
     public static void assertStatus(Response response, int expectedStatus) {

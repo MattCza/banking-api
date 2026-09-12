@@ -33,6 +33,7 @@ public class LoginIT {
 
         // Assert
         ResponseAssertions.assertJsonResponse(response, 200);
+        ResponseAssertions.assertMatchesSchema(response, "schemas/login-response-schema.json");
         LoginResponse loginResponse = response.as(LoginResponse.class);
         AuthAssertions.assertLoggedInAccount(loginResponse);
     }
@@ -92,6 +93,7 @@ public class LoginIT {
 
         Response response = authClient.login(loginRequest);
         ResponseAssertions.assertJsonResponse(response, 400);
+        ResponseAssertions.assertMatchesSchema(response, "schemas/error-response-schema.json");
 
         ErrorResponse error = response.as(ErrorResponse.class);
         ErrorAssertions.assertBadRequest(error);

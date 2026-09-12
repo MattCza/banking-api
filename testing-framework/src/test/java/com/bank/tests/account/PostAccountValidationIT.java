@@ -37,6 +37,7 @@ class PostAccountValidationIT {
 
             // Assert
             ResponseAssertions.assertStatus(response, 400);
+            ResponseAssertions.assertMatchesSchema(response, "schemas/error-response-schema.json");
 
             ErrorResponse errorResponse = response.as(ErrorResponse.class);
             ErrorAssertions.assertBadRequest(errorResponse);

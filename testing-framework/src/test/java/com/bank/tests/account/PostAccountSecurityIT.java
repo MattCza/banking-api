@@ -26,6 +26,7 @@ public class PostAccountSecurityIT {
 
     private void assertUnauthorized(Response response) {
         ResponseAssertions.assertStatus(response, 401);
+        ResponseAssertions.assertMatchesSchema(response, "schemas/error-response-schema.json");
         ErrorResponse errorResponse = response.as(ErrorResponse.class);
         ErrorAssertions.assertUnauthorized(errorResponse);
     }
@@ -65,6 +66,7 @@ public class PostAccountSecurityIT {
         Response response = accountClient.createAccount(request, userToken);
 
         ResponseAssertions.assertJsonResponse(response, 403);
+        ResponseAssertions.assertMatchesSchema(response, "schemas/error-response-schema.json");
 
         ErrorResponse error = response.as(ErrorResponse.class);
         ErrorAssertions.assertForbidden(error);

@@ -32,6 +32,7 @@ public class PutAccountIT {
 
         Response updatedAccountResponse = accountClient.updateAccount(request, createAccountId);
         ResponseAssertions.assertStatus(updatedAccountResponse, 200);
+        ResponseAssertions.assertMatchesSchema(updatedAccountResponse, "schemas/account-response-schema.json");
 
         Response getResponse = accountClient.getAccountById(createAccountId);
         ResponseAssertions.assertStatus(getResponse, 200);

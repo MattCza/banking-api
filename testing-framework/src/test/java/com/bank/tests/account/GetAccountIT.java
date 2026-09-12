@@ -33,6 +33,7 @@ public class GetAccountIT {
 
         Response getResponse = accountClient.getAccountById(createdAccount.id());
         ResponseAssertions.assertStatus(getResponse, 200);
+        ResponseAssertions.assertMatchesSchema(getResponse, "schemas/account-response-schema.json");
         AccountResponse fetchedAccount = getResponse.as(AccountResponse.class);
 
         assertThat(fetchedAccount.id()).isEqualTo(createdAccount.id());

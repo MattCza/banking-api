@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AccountResponse",
+  "type": "object",
+  "properties": {
+    "id": { "type": "integer" },
+    "ownerName": { "type": "string" },
+    "email": { "type": "string" },
+    "balance": { "type": "number" }
+  },
+  "required": ["id", "ownerName", "email", "balance"],
+  "additionalProperties": false
+}

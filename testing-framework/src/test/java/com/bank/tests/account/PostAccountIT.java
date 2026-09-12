@@ -30,6 +30,7 @@ public class PostAccountIT {
 
         // Assert
         ResponseAssertions.assertStatus(response, 201);
+        ResponseAssertions.assertMatchesSchema(response, "schemas/account-response-schema.json");
         AccountResponse createdAccount = response.as(AccountResponse.class);
 
         AccountAssertions.assertCreatedAccountResponse(createdAccount, request);
@@ -45,6 +46,7 @@ public class PostAccountIT {
 
         Response errorResponse = accountClient.createAccount(request);
         ResponseAssertions.assertStatus(errorResponse, 409);
+        ResponseAssertions.assertMatchesSchema(errorResponse, "schemas/error-response-schema.json");
 
         ErrorResponse error = errorResponse.as(ErrorResponse.class);
         ErrorAssertions.assertConflict(error);
