@@ -12,10 +12,14 @@ import com.bank.api.dto.request.CreateAccountRequest;
 import com.bank.api.dto.response.AccountResponse;
 import com.bank.api.dto.response.ErrorResponse;
 import io.restassured.response.Response;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -58,28 +62,21 @@ public class GetAccountSecurityIT {
         AccountAssertions.assertCreatedAccountResponse(fetchedAccount, createAccountRequest);
     }
 
-    @Test
-    @DisplayName("Should return 401 when JWT is missing for get account")
-    void shouldReturn401_WhenJwtIsMissing() {
-        Long accountId = createAccountAndGetId();
-        Response response = accountClient.getAccountById(accountId, null);
-        assertUnauthorized(response);
+    static Stream<Arguments> invalidTokens() {
+        return Stream.of(
+                Arguments.of("missing", null),
+                Arguments.of("invalid", "invalid JWT"),
+                Arguments.of("expired", JwtTestTokenFactory.expiredToken("admin"))
+        );
     }
 
-    @Test
+    @ParameterizedTest(name = "[{index}] {0}")
+    @MethodSource("invalidTokens")
     @DisplayName("Should return 401 when JWT is invalid for get account")
-    void shouldReturn401_WhenJwtIsInvalid() {
+    void shouldReturn401_WhenJwtIsInvalid(String description, String token) {
         Long accountId = createAccountAndGetId();
-        Response response = accountClient.getAccountById(accountId, "invalid JWT");
+        Response response = accountClient.getAccountById(accountId, token);
         assertUnauthorized(response);
     }
 
-    @Test
-    @DisplayName("Should return 401 when JWT is expired for get account")
-    void shouldReturn401_WhenJwtIsExpired() {
-        String expiredToken = JwtTestTokenFactory.expiredToken("admin");
-        Long accountId = createAccountAndGetId();
-        Response response = accountClient.getAccountById(accountId, expiredToken);
-        assertUnauthorized(response);
-    }
 }

@@ -22,13 +22,10 @@ public class PostAccountIT {
     @Tag("smoke")
     @DisplayName("Should successfully open a new bank account when provided a valid payload")
     public void shouldCreateAccountSuccessfully_WhenPayloadIsValid() {
-        // Arrange
         CreateAccountRequest request = AccountDataFactory.validCreateAccount().build();
 
-        // Act
         Response response = accountClient.createAccount(request);
 
-        // Assert
         ResponseAssertions.assertStatus(response, 201);
         ResponseAssertions.assertMatchesSchema(response, "schemas/account-response-schema.json");
         AccountResponse createdAccount = response.as(AccountResponse.class);

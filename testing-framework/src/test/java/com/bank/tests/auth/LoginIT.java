@@ -5,10 +5,8 @@ import com.bank.api.assertions.ErrorAssertions;
 import com.bank.api.assertions.ResponseAssertions;
 import com.bank.api.assertions.ValidationAssertions;
 import com.bank.api.client.AuthClient;
-import com.bank.api.data.AccountDataFactory;
 import com.bank.api.data.LoginDataFactory;
 import com.bank.api.data.LoginJsonFactory;
-import com.bank.api.dto.request.CreateAccountRequest;
 import com.bank.api.dto.request.LoginRequest;
 import com.bank.api.dto.response.ErrorResponse;
 import com.bank.api.dto.response.LoginResponse;
@@ -16,6 +14,11 @@ import io.restassured.response.Response;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.stream.Stream;
 
 @Tag("functional")
 public class LoginIT {
@@ -25,72 +28,65 @@ public class LoginIT {
     @Test
     @Tag("smoke")
     @DisplayName("Should login successfully when credentials are valid")
-    public void shouldLoginSuccessfully_WhenCredentialsAreValid() {
-        // Arrange - AAA
+    void shouldLoginSuccessfully_WhenCredentialsAreValid() {
         LoginRequest loginRequest = LoginDataFactory.validAdmin();
-        // Act
         Response response = authClient.login(loginRequest);
 
-        // Assert
         ResponseAssertions.assertJsonResponse(response, 200);
         ResponseAssertions.assertMatchesSchema(response, "schemas/login-response-schema.json");
         LoginResponse loginResponse = response.as(LoginResponse.class);
         AuthAssertions.assertLoggedInAccount(loginResponse);
     }
 
-    @Test
-    @DisplayName("Should return 401 Unauthorized when password is invalid")
-    public void shouldReturn401_WhenPasswordIsInvalid() {
-        LoginRequest loginRequest = LoginDataFactory.invalidPassword();
+    private static Stream<Arguments> invalidCredentials() {
+        return Stream.of(
+                Arguments.of("invalid password", LoginDataFactory.invalidPassword()),
+                Arguments.of("invalid username", LoginDataFactory.invalidUsername())
+        );
+    }
 
+    @ParameterizedTest(name = "[{index}] {0}")
+    @MethodSource("invalidCredentials")
+    @DisplayName("Should return 401 Unauthorized when credentials are invalid")
+    void shouldReturn401_WhenCredentialsAreInvalid(String description, LoginRequest loginRequest) {
         Response response = authClient.login(loginRequest);
         ResponseAssertions.assertJsonResponse(response, 401);
+        ResponseAssertions.assertMatchesSchema(response, "schemas/error-response-schema.json");
 
         ErrorResponse error = response.as(ErrorResponse.class);
         ErrorAssertions.assertUnauthorized(error);
     }
 
-    @Test
-    @DisplayName("Should return 401 Unauthorized when username is invalid")
-    public void shouldReturn401_WhenUsernameIsInvalid() {
-        LoginRequest loginRequest = LoginDataFactory.invalidUsername();
-
-        Response response = authClient.login(loginRequest);
-        ResponseAssertions.assertJsonResponse(response, 401);
-
-        ErrorResponse error = response.as(ErrorResponse.class);
-        ErrorAssertions.assertUnauthorized(error);
+    private static Stream<Arguments> blankCredentials() {
+        return Stream.of(
+                Arguments.of("blank username", LoginDataFactory.blankUsername()),
+                Arguments.of("blank password", LoginDataFactory.blankPassword())
+        );
     }
 
-    @Test
-    @DisplayName("Should return 400 Bad Request when username is blank")
-    public void shouldReturn401_WhenUsernameIsBlank() {
-        LoginRequest loginRequest = LoginDataFactory.blankUsername();
-
+    @ParameterizedTest(name = "[{index}] {0}")
+    @MethodSource("blankCredentials")
+    @DisplayName("Should return 400 Bad Request when a credential is blank")
+    void shouldReturn400_WhenCredentialIsBlank(String description, LoginRequest loginRequest) {
         Response response = authClient.login(loginRequest);
         ResponseAssertions.assertJsonResponse(response, 400);
+        ResponseAssertions.assertMatchesSchema(response, "schemas/error-response-schema.json");
 
         ErrorResponse error = response.as(ErrorResponse.class);
         ErrorAssertions.assertBadRequest(error);
     }
 
-    @Test
-    @DisplayName("Should return 401 Unauthorized when username is blank")
-    public void shouldReturn401_WhenPasswordIsBlank() {
-        LoginRequest loginRequest = LoginDataFactory.blankPassword();
-
-        Response response = authClient.login(loginRequest);
-        ResponseAssertions.assertJsonResponse(response, 400);
-
-        ErrorResponse error = response.as(ErrorResponse.class);
-        ErrorAssertions.assertBadRequest(error);
+    private static Stream<Arguments> nullCredentials() {
+        return Stream.of(
+                Arguments.of("null username", LoginDataFactory.nullUsername(), "username", "Username is required"),
+                Arguments.of("null password", LoginDataFactory.nullPassword(), "password", "Password is required")
+        );
     }
 
-    @Test
-    @DisplayName("Should return 400 Bad Request when username is null")
-    public void shouldReturn400_WhenUsernameIsNull() {
-        LoginRequest loginRequest = LoginDataFactory.nullUsername();
-
+    @ParameterizedTest(name = "[{index}] {0}")
+    @MethodSource("nullCredentials")
+    @DisplayName("Should return 400 Bad Request when a credential is null")
+    void shouldReturn400_WhenCredentialIsNull(String description, LoginRequest loginRequest, String field, String message) {
         Response response = authClient.login(loginRequest);
         ResponseAssertions.assertJsonResponse(response, 400);
         ResponseAssertions.assertMatchesSchema(response, "schemas/error-response-schema.json");
@@ -98,41 +94,21 @@ public class LoginIT {
         ErrorResponse error = response.as(ErrorResponse.class);
         ErrorAssertions.assertBadRequest(error);
 
-        ValidationAssertions.assertFieldErrors(error, "username", "Username is required");
+        ValidationAssertions.assertFieldErrors(error, field, message);
     }
 
-    @Test
-    @DisplayName("Should return 400 Bad Request when password is null")
-    public void shouldReturn400_WhenPasswordIsNull() {
-        LoginRequest loginRequest = LoginDataFactory.nullPassword();
-
-        Response response = authClient.login(loginRequest);
-        ResponseAssertions.assertJsonResponse(response, 400);
-
-        ErrorResponse error = response.as(ErrorResponse.class);
-        ErrorAssertions.assertBadRequest(error);
-
-        ValidationAssertions.assertFieldErrors(error, "password", "Password is required");
+    private static Stream<Arguments> malformedBodies() {
+        return Stream.of(
+                Arguments.of("malformed JSON", LoginJsonFactory.malformedJson()),
+                Arguments.of("empty body", LoginJsonFactory.emptyBody())
+        );
     }
 
-    @Test
-    @DisplayName("Should return 400 Bad Request when request body contains malformed JSON")
-    void shouldReturn400_WhenJsonIsMalformed() {
-        String malformedJson = LoginJsonFactory.malformedJson();
-
-        Response response = authClient.login(malformedJson);
-        ResponseAssertions.assertJsonResponse(response, 400);
-
-        ErrorResponse error = response.as(ErrorResponse.class);
-        ErrorAssertions.assertMalformedJson(error);
-    }
-
-    @Test
-    @DisplayName("Should return 400 Bad Request when request body is empty")
-    void shouldReturn400_WhenJsonIsEmpty() {
-        String emptyJson = LoginJsonFactory.emptyBody();
-
-        Response response = authClient.login(emptyJson);
+    @ParameterizedTest(name = "[{index}] {0}")
+    @MethodSource("malformedBodies")
+    @DisplayName("Should return 400 Bad Request when request body is malformed")
+    void shouldReturn400_WhenBodyIsMalformed(String description, String body) {
+        Response response = authClient.login(body);
         ResponseAssertions.assertJsonResponse(response, 400);
 
         ErrorResponse error = response.as(ErrorResponse.class);

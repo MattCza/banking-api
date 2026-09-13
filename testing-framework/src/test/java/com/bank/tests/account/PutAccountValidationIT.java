@@ -12,18 +12,22 @@ import com.bank.api.dto.response.AccountResponse;
 import com.bank.api.dto.response.ErrorResponse;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.math.BigDecimal;
+import java.util.stream.Stream;
 
 @Tag("validation")
 public class PutAccountValidationIT {
 
-    AccountClient accountClient = new AccountClient();
+    private final AccountClient accountClient = new AccountClient();
 
     private Long createAccountAndGetId() {
         CreateAccountRequest createAccountRequest = AccountDataFactory.validCreateAccount().build();
         Response response = accountClient.createAccount(createAccountRequest);
-        Assertions.assertEquals(201, response.getStatusCode());
+        ResponseAssertions.assertStatus(response, 201);
         return response.as(AccountResponse.class).id();
     }
 
@@ -31,61 +35,30 @@ public class PutAccountValidationIT {
     @DisplayName("Owner name validation")
     class OwnerNameValidation {
 
-        @Test
-        @DisplayName("Should return 400 when owner name is null")
-        void shouldReturn400_WhenOwnerNameIsNull() {
-            Long id = createAccountAndGetId();
-
-            UpdateAccountRequest updateAccountRequest = AccountDataFactory.validUpdateAccount().withOwnerName(null).build();
-            Response updateResponse = accountClient.updateAccount(updateAccountRequest, id);
-            ResponseAssertions.assertStatus(updateResponse, 400);
-
-            ErrorResponse errorResponse = updateResponse.as(ErrorResponse.class);
-            ErrorAssertions.assertBadRequest(errorResponse);
-            ValidationAssertions.assertFieldErrors(errorResponse, "ownerName", "Owner name must not be blank");
+        static Stream<Arguments> invalidOwnerNames() {
+            return Stream.of(
+                    Arguments.of("null", null, new String[]{"Owner name must not be blank"}),
+                    Arguments.of("blank", "", new String[]{"Owner name must not be blank", "Owner name must be between 3 and 50 characters"}),
+                    Arguments.of("only whitespace", "     ", new String[]{"Owner name must not be blank"}),
+                    Arguments.of("too short", "JL", new String[]{"Owner name must be between 3 and 50 characters"}),
+                    Arguments.of("too long", "A".repeat(51), new String[]{"Owner name must be between 3 and 50 characters"})
+            );
         }
 
-        @Test
-        @DisplayName("Should return 400 when owner name is blank")
-        void shouldReturn400_WhenOwnerNameIsBlank() {
+        @ParameterizedTest(name = "[{index}] {0}")
+        @MethodSource("invalidOwnerNames")
+        @DisplayName("Should return 400 when owner name is invalid")
+        void shouldReturn400_WhenOwnerNameIsInvalid(String description, String ownerName, String[] expectedMessages) {
             Long id = createAccountAndGetId();
 
-            UpdateAccountRequest updateAccountRequest = AccountDataFactory.validUpdateAccount().withOwnerName("").build();
+            UpdateAccountRequest updateAccountRequest = AccountDataFactory.validUpdateAccount().withOwnerName(ownerName).build();
             Response updateResponse = accountClient.updateAccount(updateAccountRequest, id);
             ResponseAssertions.assertStatus(updateResponse, 400);
+            ResponseAssertions.assertMatchesSchema(updateResponse, "schemas/error-response-schema.json");
 
             ErrorResponse errorResponse = updateResponse.as(ErrorResponse.class);
             ErrorAssertions.assertBadRequest(errorResponse);
-            ValidationAssertions.assertFieldErrors(errorResponse, "ownerName", "Owner name must not be blank",
-                    "Owner name must be between 3 and 50 characters");
-        }
-
-        @Test
-        @DisplayName("Should return 400 when owner name contains only whitespaces")
-        void shouldReturn400_WhenOwnerNameContainsOnlyWhitespaces() {
-            Long id = createAccountAndGetId();
-
-            UpdateAccountRequest updateAccountRequest = AccountDataFactory.validUpdateAccount().withOwnerName("     ").build();
-            Response updateResponse = accountClient.updateAccount(updateAccountRequest, id);
-            ResponseAssertions.assertStatus(updateResponse, 400);
-
-            ErrorResponse errorResponse = updateResponse.as(ErrorResponse.class);
-            ErrorAssertions.assertBadRequest(errorResponse);
-            ValidationAssertions.assertFieldErrors(errorResponse, "ownerName", "Owner name must not be blank");
-        }
-
-        @Test
-        @DisplayName("Should return 400 when owner name is too short")
-        void shouldReturn400_WhenOwnerNameIsTooShort() {
-            Long id = createAccountAndGetId();
-
-            UpdateAccountRequest updateAccountRequest = AccountDataFactory.validUpdateAccount().withOwnerName("JL").build();
-            Response updateResponse = accountClient.updateAccount(updateAccountRequest, id);
-            ResponseAssertions.assertStatus(updateResponse, 400);
-
-            ErrorResponse errorResponse = updateResponse.as(ErrorResponse.class);
-            ErrorAssertions.assertBadRequest(errorResponse);
-            ValidationAssertions.assertFieldErrors(errorResponse, "ownerName", "Owner name must be between 3 and 50 characters");
+            ValidationAssertions.assertFieldErrors(errorResponse, "ownerName", expectedMessages);
         }
 
         @Test
@@ -114,81 +87,37 @@ public class PutAccountValidationIT {
             AccountResponse accountResponse = updateResponse.as(AccountResponse.class);
             AccountAssertions.assertUpdatedAccountResponse(accountResponse, updateAccountRequest, id);
         }
-
-        @Test
-        @DisplayName("Should return 400 when owner name exceeds max length")
-        void shouldReturn400_WhenOwnerNameExceedsMaxLength() {
-            Long id = createAccountAndGetId();
-
-            String ownerName = "A".repeat(51);
-            UpdateAccountRequest updateAccountRequest = AccountDataFactory.validUpdateAccount().withOwnerName(ownerName).build();
-            Response updateResponse = accountClient.updateAccount(updateAccountRequest, id);
-            ResponseAssertions.assertStatus(updateResponse, 400);
-
-            ErrorResponse errorResponse = updateResponse.as(ErrorResponse.class);
-            ErrorAssertions.assertBadRequest(errorResponse);
-            ValidationAssertions.assertFieldErrors(errorResponse, "ownerName", "Owner name must be between 3 and 50 characters");
-        }
     }
 
     @Nested
     @DisplayName("Email validation")
     class EmailValidation {
 
-        @Test
-        @DisplayName("Should return 400 when email is null")
-        void shouldReturn400_WhenEmailIsNull() {
-            Long id = createAccountAndGetId();
-
-            UpdateAccountRequest updateAccountRequest = AccountDataFactory.validUpdateAccount().withEmail(null).build();
-            Response updateResponse = accountClient.updateAccount(updateAccountRequest, id);
-            ResponseAssertions.assertStatus(updateResponse, 400);
-
-            ErrorResponse errorResponse = updateResponse.as(ErrorResponse.class);
-            ErrorAssertions.assertBadRequest(errorResponse);
-            ValidationAssertions.assertFieldErrors(errorResponse, "email", "Email cannot be empty");
+        static Stream<Arguments> invalidEmails() {
+            return Stream.of(
+                    Arguments.of("null", null, new String[]{"Email cannot be empty"}),
+                    Arguments.of("blank", "", new String[]{"Email cannot be empty"}),
+                    Arguments.of("leading whitespace", "     @gmail.com", new String[]{"Email must be a valid format"}),
+                    Arguments.of("invalid format", "MCSWT", new String[]{"Email must be a valid format"}),
+                    Arguments.of("exceeds max length - 255 chars", AccountDataFactory.emailWithLength(255),
+                            new String[]{"Email must be at most 254 characters long"})
+            );
         }
 
-        @Test
-        @DisplayName("Should return 400 when email is empty")
-        void shouldReturn400_WhenEmailIsBlank() {
+        @ParameterizedTest(name = "[{index}] {0}")
+        @MethodSource("invalidEmails")
+        @DisplayName("Should return 400 when email is invalid")
+        void shouldReturn400_WhenEmailIsInvalid(String description, String email, String[] expectedMessages) {
             Long id = createAccountAndGetId();
 
-            UpdateAccountRequest updateAccountRequest = AccountDataFactory.validUpdateAccount().withEmail("").build();
+            UpdateAccountRequest updateAccountRequest = AccountDataFactory.validUpdateAccount().withEmail(email).build();
             Response updateResponse = accountClient.updateAccount(updateAccountRequest, id);
             ResponseAssertions.assertStatus(updateResponse, 400);
+            ResponseAssertions.assertMatchesSchema(updateResponse, "schemas/error-response-schema.json");
 
             ErrorResponse errorResponse = updateResponse.as(ErrorResponse.class);
             ErrorAssertions.assertBadRequest(errorResponse);
-            ValidationAssertions.assertFieldErrors(errorResponse, "email", "Email cannot be empty");
-        }
-
-        @Test
-        @DisplayName("Should return 400 when email contains whitespaces")
-        void shouldReturn400_WhenEmailContainsLeadingWhitespaces() {
-            Long id = createAccountAndGetId();
-
-            UpdateAccountRequest updateAccountRequest = AccountDataFactory.validUpdateAccount().withEmail("     @gmail.com").build();
-            Response updateResponse = accountClient.updateAccount(updateAccountRequest, id);
-            ResponseAssertions.assertStatus(updateResponse, 400);
-
-            ErrorResponse errorResponse = updateResponse.as(ErrorResponse.class);
-            ErrorAssertions.assertBadRequest(errorResponse);
-            ValidationAssertions.assertFieldErrors(errorResponse, "email", "Email must be a valid format");
-        }
-
-        @Test
-        @DisplayName("Should return 400 when email has invalid format")
-        void shouldReturn400_WhenEmailIsInvalidFormated() {
-            Long id = createAccountAndGetId();
-
-            UpdateAccountRequest updateAccountRequest = AccountDataFactory.validUpdateAccount().withEmail("MCSWT").build();
-            Response updateResponse = accountClient.updateAccount(updateAccountRequest, id);
-            ResponseAssertions.assertStatus(updateResponse, 400);
-
-            ErrorResponse errorResponse = updateResponse.as(ErrorResponse.class);
-            ErrorAssertions.assertBadRequest(errorResponse);
-            ValidationAssertions.assertFieldErrors(errorResponse, "email", "Email must be a valid format");
+            ValidationAssertions.assertFieldErrors(errorResponse, "email", expectedMessages);
         }
 
         @Test
@@ -204,53 +133,38 @@ public class PutAccountValidationIT {
             AccountResponse accountResponse = updateResponse.as(AccountResponse.class);
             AccountAssertions.assertUpdatedAccountResponse(accountResponse, updateAccountRequest, id);
         }
-
-        @Test
-        @DisplayName("Should return 400 when email exceeds max length - 255 chars")
-        void shouldReturn400_WhenEmailExceedsMaxLength() {
-            Long id = createAccountAndGetId();
-
-            String email = AccountDataFactory.emailWithLength(255);
-            UpdateAccountRequest updateAccountRequest = AccountDataFactory.validUpdateAccount().withEmail(email).build();
-            Response updateResponse = accountClient.updateAccount(updateAccountRequest, id);
-            ResponseAssertions.assertStatus(updateResponse, 400);
-
-            ErrorResponse errorResponse = updateResponse.as(ErrorResponse.class);
-            ErrorAssertions.assertBadRequest(errorResponse);
-            ValidationAssertions.assertFieldErrors(errorResponse, "email", "Email must be at most 254 characters long");
-        }
     }
 
     @Nested
     @DisplayName("Balance validation")
     class BalanceValidation {
 
-        @Test
-        @DisplayName("Should return 400 when balance is null")
-        void shouldReturn400_WhenBalanceIsNull() {
-            Long id = createAccountAndGetId();
-
-            UpdateAccountRequest updateAccountRequest = AccountDataFactory.validUpdateAccount().withBalance(null).build();
-            Response updateResponse = accountClient.updateAccount(updateAccountRequest, id);
-            ResponseAssertions.assertStatus(updateResponse, 400);
-
-            ErrorResponse errorResponse = updateResponse.as(ErrorResponse.class);
-            ErrorAssertions.assertBadRequest(errorResponse);
-            ValidationAssertions.assertFieldErrors(errorResponse, "balance", "Initial balance cannot be null");
+        static Stream<Arguments> invalidBalances() {
+            return Stream.of(
+                    Arguments.of("null", null, new String[]{"Initial balance cannot be null"}),
+                    Arguments.of("negative", new BigDecimal("-1"),
+                            new String[]{"Initial balance cannot be negative"}),
+                    Arguments.of("more than 2 decimal places", new BigDecimal("100.123"),
+                            new String[]{"Initial balance must contain up to 17 integer digits and 2 decimal places"}),
+                    Arguments.of("more than 17 integer digits", new BigDecimal("123456789012345678.12"),
+                            new String[]{"Initial balance must contain up to 17 integer digits and 2 decimal places"})
+            );
         }
 
-        @Test
-        @DisplayName("Should return 400 when balance is negative value")
-        void shouldReturn400_WhenBalanceIsNegative() {
+        @ParameterizedTest(name = "[{index}] {0}")
+        @MethodSource("invalidBalances")
+        @DisplayName("Should return 400 when balance is invalid")
+        void shouldReturn400_WhenBalanceIsInvalid(String description, BigDecimal balance, String[] expectedMessages) {
             Long id = createAccountAndGetId();
 
-            UpdateAccountRequest updateAccountRequest = AccountDataFactory.validUpdateAccount().withBalance(new BigDecimal("-1")).build();
+            UpdateAccountRequest updateAccountRequest = AccountDataFactory.validUpdateAccount().withBalance(balance).build();
             Response updateResponse = accountClient.updateAccount(updateAccountRequest, id);
             ResponseAssertions.assertStatus(updateResponse, 400);
+            ResponseAssertions.assertMatchesSchema(updateResponse, "schemas/error-response-schema.json");
 
             ErrorResponse errorResponse = updateResponse.as(ErrorResponse.class);
             ErrorAssertions.assertBadRequest(errorResponse);
-            ValidationAssertions.assertFieldErrors(errorResponse, "balance", "Initial balance cannot be negative");
+            ValidationAssertions.assertFieldErrors(errorResponse, "balance", expectedMessages);
         }
 
         @Test
@@ -280,34 +194,6 @@ public class PutAccountValidationIT {
             AccountAssertions.assertUpdatedAccountResponse(accountResponse, updateAccountRequest, id);
         }
 
-        @Test
-        @DisplayName("Should return 400 when balance contains more than 2 decimal places")
-        void shouldReturn400_WhenBalanceContainsMoreThan2FractionDigits() {
-            Long id = createAccountAndGetId();
-
-            UpdateAccountRequest updateAccountRequest = AccountDataFactory.validUpdateAccount()
-                    .withBalance(new BigDecimal("100.123")).build();
-            Response updateResponse = accountClient.updateAccount(updateAccountRequest, id);
-            ResponseAssertions.assertStatus(updateResponse, 400);
-
-            ErrorResponse errorResponse = updateResponse.as(ErrorResponse.class);
-            ErrorAssertions.assertBadRequest(errorResponse);
-            ValidationAssertions.assertFieldErrors(errorResponse, "balance", "Initial balance must contain up to 17 integer digits and 2 decimal places");
-        }
-
-        @Test
-        @DisplayName("Should return 400 when balance contains more than 17 integer digits")
-        void shouldReturn400_WhenBalanceContainsMoreThan17IntegerDigits() {
-            Long id = createAccountAndGetId();
-
-            UpdateAccountRequest updateAccountRequest = AccountDataFactory.validUpdateAccount()
-                    .withBalance(new BigDecimal("123456789012345678.12")).build();
-            Response updateResponse = accountClient.updateAccount(updateAccountRequest, id);
-            ResponseAssertions.assertStatus(updateResponse, 400);
-
-            ErrorResponse errorResponse = updateResponse.as(ErrorResponse.class);
-            ErrorAssertions.assertBadRequest(errorResponse);
-            ValidationAssertions.assertFieldErrors(errorResponse, "balance", "Initial balance must contain up to 17 integer digits and 2 decimal places");
-        }
     }
+
 }

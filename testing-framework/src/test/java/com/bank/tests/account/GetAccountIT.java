@@ -12,6 +12,8 @@ import io.restassured.response.Response;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -40,31 +42,13 @@ public class GetAccountIT {
         AccountAssertions.assertCreatedAccountResponse(fetchedAccount, request);
     }
 
-    @Test
+    @ParameterizedTest
+    @ValueSource(longs = {99999L, 0L, -1L})
     @DisplayName("Should return 404 error response when account does not exist")
-    void shouldReturn404_WhenAccountDoesNotExist() {
-        Response response = accountClient.getAccountById(999999L);
+    void shouldReturn404_WhenAccountDoesNotExist(long accountId) {
+        Response response = accountClient.getAccountById(accountId);
         ResponseAssertions.assertStatus(response, 404);
-
-        ErrorResponse errorResponse = response.as(ErrorResponse.class);
-        ErrorAssertions.assertNotFound(errorResponse);
-    }
-
-    @Test
-    @DisplayName("Should return 404 error response when account ID is 0")
-    void shouldReturn404_WhenAccountIdIsZero() {
-        Response response = accountClient.getAccountById(0L);
-        ResponseAssertions.assertStatus(response, 404);
-
-        ErrorResponse errorResponse = response.as(ErrorResponse.class);
-        ErrorAssertions.assertNotFound(errorResponse);
-    }
-
-    @Test
-    @DisplayName("Should return 404 error response when account ID is -1")
-    void shouldReturn404_WhenAccountIdIsNegative() {
-        Response response = accountClient.getAccountById(-1L);
-        ResponseAssertions.assertStatus(response, 404);
+        ResponseAssertions.assertMatchesSchema(response, "schemas/error-response-schema.json");
 
         ErrorResponse errorResponse = response.as(ErrorResponse.class);
         ErrorAssertions.assertNotFound(errorResponse);
@@ -80,4 +64,5 @@ public class GetAccountIT {
         ErrorResponse errorResponse = response.as(ErrorResponse.class);
         ErrorAssertions.assertInvalidPathParameter(errorResponse);
     }
+
 }
