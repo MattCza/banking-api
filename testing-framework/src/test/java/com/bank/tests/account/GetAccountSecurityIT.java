@@ -10,7 +10,6 @@ import com.bank.api.data.JwtTestTokenFactory;
 import com.bank.api.data.LoginDataFactory;
 import com.bank.api.dto.request.CreateAccountRequest;
 import com.bank.api.dto.response.AccountResponse;
-import com.bank.api.dto.response.ErrorResponse;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -34,13 +33,6 @@ public class GetAccountSecurityIT {
         ResponseAssertions.assertStatus(response, 201);
         return response.as(AccountResponse.class).id();
     }
-
-    private void assertUnauthorized(Response response) {
-        ResponseAssertions.assertStatus(response, 401);
-        ErrorResponse errorResponse = response.as(ErrorResponse.class);
-        ErrorAssertions.assertUnauthorized(errorResponse);
-    }
-
 
     @Test
     @DisplayName("Should return 200 when regular user attempts to get an account")
@@ -76,7 +68,7 @@ public class GetAccountSecurityIT {
     void shouldReturn401_WhenJwtIsInvalid(String description, String token) {
         Long accountId = createAccountAndGetId();
         Response response = accountClient.getAccountById(accountId, token);
-        assertUnauthorized(response);
+        ErrorAssertions.assertUnauthorized(response);
     }
 
 }

@@ -1,6 +1,7 @@
 package com.bank.api.assertions;
 
 import com.bank.api.dto.response.ErrorResponse;
+import io.restassured.response.Response;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -42,6 +43,12 @@ public final class ErrorAssertions {
         assertThat(actual.validationErrors()).isEmpty();
     }
 
+    public static void assertUnauthorized(Response response) {
+        ResponseAssertions.assertJsonResponse(response, 401);
+        ResponseAssertions.assertMatchesSchema(response, "schemas/error-response-schema.json");
+        assertUnauthorized(response.as(ErrorResponse.class));
+    }
+
     public static void assertBadRequest(ErrorResponse actual) {
         assertError(actual, 400, "BAD_REQUEST","Validation failed");
     }
@@ -62,5 +69,10 @@ public final class ErrorAssertions {
         assertError(actual, 403, "FORBIDDEN","Access denied");
     }
 
+    public static void assertForbidden(Response response) {
+        ResponseAssertions.assertJsonResponse(response, 403);
+        ResponseAssertions.assertMatchesSchema(response, "schemas/error-response-schema.json");
+        assertForbidden(response.as(ErrorResponse.class));
+    }
 
 }
