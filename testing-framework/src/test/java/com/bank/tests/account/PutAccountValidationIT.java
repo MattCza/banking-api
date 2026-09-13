@@ -4,9 +4,7 @@ import com.bank.api.assertions.AccountAssertions;
 import com.bank.api.assertions.ErrorAssertions;
 import com.bank.api.assertions.ResponseAssertions;
 import com.bank.api.assertions.ValidationAssertions;
-import com.bank.api.client.AccountClient;
 import com.bank.api.data.AccountDataFactory;
-import com.bank.api.dto.request.CreateAccountRequest;
 import com.bank.api.dto.request.UpdateAccountRequest;
 import com.bank.api.dto.response.AccountResponse;
 import com.bank.api.dto.response.ErrorResponse;
@@ -20,16 +18,7 @@ import java.math.BigDecimal;
 import java.util.stream.Stream;
 
 @Tag("validation")
-public class PutAccountValidationIT {
-
-    private final AccountClient accountClient = new AccountClient();
-
-    private Long createAccountAndGetId() {
-        CreateAccountRequest createAccountRequest = AccountDataFactory.validCreateAccount().build();
-        Response response = accountClient.createAccount(createAccountRequest);
-        ResponseAssertions.assertStatus(response, 201);
-        return response.as(AccountResponse.class).id();
-    }
+public class PutAccountValidationIT extends BaseAccountIT {
 
     @Nested
     @DisplayName("Owner name validation")

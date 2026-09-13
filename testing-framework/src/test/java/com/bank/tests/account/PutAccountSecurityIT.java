@@ -1,14 +1,11 @@
 package com.bank.tests.account;
 
 import com.bank.api.assertions.ErrorAssertions;
-import com.bank.api.assertions.ResponseAssertions;
-import com.bank.api.client.AccountClient;
 import com.bank.api.client.AuthClient;
 import com.bank.api.data.AccountDataFactory;
 import com.bank.api.data.JwtTestTokenFactory;
 import com.bank.api.data.LoginDataFactory;
 import com.bank.api.dto.request.UpdateAccountRequest;
-import com.bank.api.dto.response.AccountResponse;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -20,16 +17,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.util.stream.Stream;
 
 @Tag("security")
-public class PutAccountSecurityIT {
-
-    private final AccountClient accountClient = new AccountClient();
-
-
-    private Long createAccountAndGetId() {
-        Response response = accountClient.createAccount(AccountDataFactory.validCreateAccount().build());
-        ResponseAssertions.assertStatus(response, 201);
-        return response.as(AccountResponse.class).id();
-    }
+public class PutAccountSecurityIT extends BaseAccountIT {
 
     static Stream<Arguments> invalidTokens() {
         return Stream.of(

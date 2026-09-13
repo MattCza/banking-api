@@ -19,12 +19,12 @@ public class PutAccountIT {
 
     private final AccountClient accountClient = new AccountClient();
 
+
     @Test
     @Tag("smoke")
     @DisplayName("Should update account details when account exists")
     void shouldUpdateAccount_WhenAccountExists() {
         Response createAccountResponse = accountClient.createAccount(AccountDataFactory.validCreateAccount().build());
-
         ResponseAssertions.assertStatus(createAccountResponse, 201);
         Long createAccountId = createAccountResponse.as(AccountResponse.class).id();
 

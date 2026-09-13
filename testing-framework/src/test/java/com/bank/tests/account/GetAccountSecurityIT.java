@@ -3,7 +3,6 @@ package com.bank.tests.account;
 import com.bank.api.assertions.AccountAssertions;
 import com.bank.api.assertions.ErrorAssertions;
 import com.bank.api.assertions.ResponseAssertions;
-import com.bank.api.client.AccountClient;
 import com.bank.api.client.AuthClient;
 import com.bank.api.data.AccountDataFactory;
 import com.bank.api.data.JwtTestTokenFactory;
@@ -23,16 +22,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Tag("security")
-public class GetAccountSecurityIT {
-
-    private final AccountClient accountClient = new AccountClient();
-
-
-    private Long createAccountAndGetId() {
-        Response response = accountClient.createAccount(AccountDataFactory.validCreateAccount().build());
-        ResponseAssertions.assertStatus(response, 201);
-        return response.as(AccountResponse.class).id();
-    }
+public class GetAccountSecurityIT extends BaseAccountIT {
 
     @Test
     @DisplayName("Should return 200 when regular user attempts to get an account")
