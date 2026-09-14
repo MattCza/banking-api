@@ -22,4 +22,5 @@ public record Money(BigDecimal amount, Currency currency) {
                     "Currency mismatch: account is in " + currency + " but operation was in " + other.currency);
         }
     }
+
 }
