@@ -47,8 +47,12 @@ Supporting project files:
 - JWT-secured authentication flow
 - Role-based authorization (`ADMIN` vs `USER`) on account mutation endpoints
 - Account create, read, update, and delete endpoints
+- Multi-currency accounts (`PLN`/`EUR`/`USD`/`GBP`) modeled as a `Money` value object (amount + currency)
+- Deposit and withdrawal transactions, with currency-mismatch and insufficient-funds protection
+- Concurrency-safe balance updates
 - Validation and error contract handling
 - Duplicate email protection, including under concurrent requests
+- API response contract validation via JSON Schema
 - Multi-module Maven structure for backend and test automation
 
 ## Quality & CI/CD
@@ -112,15 +116,17 @@ These credentials are intended for local and CI usage only.
 
 - Authentication happy-path and negative scenarios
 - Account create, get, delete, and update flows
+- Deposit and withdrawal flows, including currency-mismatch and insufficient-funds conflicts
 - Validation and error contract checks
+- JSON Schema validation of response contracts
 - JWT security coverage (missing/invalid/expired tokens) for every endpoint
 - Role-based authorization coverage (403 for the wrong role, success for the right one)
 - Duplicate email concurrency coverage on both create and update
+- Concurrency coverage proving parallel withdrawals can't push a balance negative
 
 ## Next Improvements
 
-- unit tests for `JwtAuthenticationFilter` (currently only covered indirectly via integration tests)
-- OpenAPI spec and contract/schema validation
+- OpenAPI spec generation
 - Testcontainers-based test data lifecycle, replacing the shared long-lived local database
 - parallel test execution
-- transfer and transaction scenarios
+- transfer between accounts

@@ -23,9 +23,12 @@ The main goals of the strategy are to:
 
 - authentication endpoint behavior
 - account create, read, update, and delete flows
+- deposit and withdrawal transaction flows
+- multi-currency account support and currency-mismatch handling
 - request validation rules
 - HTTP status code correctness
 - API error response contract
+- API response contract validation via JSON Schema
 - authorization checks for protected endpoints
 - duplicate email and concurrency behavior
 
@@ -129,6 +132,21 @@ Covered areas:
 - invalid path parameter
 - role-based access control (only ADMIN may delete accounts)
 
+### Transactions
+
+`POST /api/v1/accounts/{id}/deposit`  
+`POST /api/v1/accounts/{id}/withdraw`
+
+Covered areas:
+
+- successful deposit and withdrawal, verified against the account's resulting balance
+- validation of amount (null, zero, negative, precision) and currency (null)
+- currency-mismatch between the request and the account's currency
+- insufficient funds on withdrawal
+- account not found
+- role-based access control (only ADMIN may deposit or withdraw)
+- concurrency: parallel withdrawals against the same account never push the balance negative
+
 
 ## 6a. Test Categorization
 
@@ -159,7 +177,7 @@ Generated data is used for:
 
 - owner names
 - email addresses
-- monetary values
+- monetary values and currencies
 
 Dynamic test data reduces collisions between test runs and improves repeatability across environments.
 
@@ -208,7 +226,7 @@ The CI objective is to provide fast feedback after code changes, fail quickly on
 
 Current gaps that are intentionally left for future iterations:
 
-- transfer and transaction domain scenarios
+- transfer between accounts
 - performance and resilience testing
 - richer reporting and quality gates
 - Testcontainers-based environment management

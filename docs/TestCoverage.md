@@ -52,6 +52,8 @@ For each endpoint, the test suite aims to cover the following areas:
 | Negative initial balance                | High     | Yes       | Done   |
 | Too many integer digits in balance      | High     | Yes       | Done   |
 | Too many decimal places in balance      | High     | Yes       | Done   |
+| Null currency                           | High     | Yes       | Done   |
+| Every supported currency accepted       | Medium   | Yes       | Done   |
 | Missing JWT                             | Critical | Yes       | Done   |
 | Invalid JWT                             | Critical | Yes       | Done   |
 | Expired JWT                             | Critical | Yes       | Done   |
@@ -84,14 +86,12 @@ For each endpoint, the test suite aims to cover the following areas:
 | Empty email                                    | High     | Yes       | Done   |
 | Null email                                     | High     | Yes       | Done   |
 | Too long email                                 | High     | Yes       | Done   |
-| Null balance                                   | High     | Yes       | Done   |
-| Negative balance                               | High     | Yes       | Done   |
-| Too many integer digits in balance             | High     | Yes       | Done   |
-| Too many decimal places in balance             | High     | Yes       | Done   |
 | Missing JWT                                    | Critical | Yes       | Done   |
 | Invalid JWT                                    | Critical | Yes       | Done   |
 | Expired JWT                                    | Critical | Yes       | Done   |
 | Regular user attempts to update account        | Critical | Yes       | Done   |
+
+Note: `balance` is no longer part of the update payload — it changes only through deposit/withdrawal transactions below, so PUT no longer validates it.
 
 ### DELETE /api/v1/accounts/{id}
 
@@ -105,6 +105,44 @@ For each endpoint, the test suite aims to cover the following areas:
 | Invalid JWT                                   | Critical | Yes       | Done   |
 | Expired JWT                                   | Critical | Yes       | Done   |
 | Regular user attempts to delete account       | Critical | Yes       | Done   |
+
+### POST /api/v1/accounts/{id}/deposit
+
+| Scenario                                | Priority | Automated | Status |
+|-----------------------------------------|----------|-----------|--------|
+| Successful deposit                      | Critical | Yes       | Done   |
+| Null amount                             | High     | Yes       | Done   |
+| Zero amount                             | High     | Yes       | Done   |
+| Negative amount                         | High     | Yes       | Done   |
+| Too many integer digits in amount       | Medium   | Yes       | Done   |
+| Too many decimal places in amount       | Medium   | Yes       | Done   |
+| Null currency                           | High     | Yes       | Done   |
+| Currency mismatch with account currency | Critical | Yes       | Done   |
+| Non-existing account                    | High     | Yes       | Done   |
+| Missing JWT                             | Critical | Yes       | Done   |
+| Invalid JWT                             | Critical | Yes       | Done   |
+| Expired JWT                             | Critical | Yes       | Done   |
+| Regular user attempts to deposit        | Critical | Yes       | Done   |
+
+### POST /api/v1/accounts/{id}/withdraw
+
+| Scenario                                    | Priority | Automated | Status |
+|---------------------------------------------|----------|-----------|--------|
+| Successful withdrawal                       | Critical | Yes       | Done   |
+| Null amount                                 | High     | Yes       | Done   |
+| Zero amount                                 | High     | Yes       | Done   |
+| Negative amount                             | High     | Yes       | Done   |
+| Too many integer digits in amount           | Medium   | Yes       | Done   |
+| Too many decimal places in amount           | Medium   | Yes       | Done   |
+| Null currency                               | High     | Yes       | Done   |
+| Currency mismatch with account currency     | Critical | Yes       | Done   |
+| Insufficient funds                          | Critical | Yes       | Done   |
+| Non-existing account                        | High     | Yes       | Done   |
+| Missing JWT                                 | Critical | Yes       | Done   |
+| Invalid JWT                                 | Critical | Yes       | Done   |
+| Expired JWT                                 | Critical | Yes       | Done   |
+| Regular user attempts to withdraw           | Critical | Yes       | Done   |
+| Parallel withdrawals never overdraw balance | Critical | Yes       | Done   |
 
 ## Test Categorization
 
@@ -125,8 +163,6 @@ Independently of category, one happy-path test per resource (login, create/get/u
 
 The following areas are not yet covered and are good candidates for future work:
 
-- transfer and transaction flows
+- transfer between accounts
 - performance and resilience testing
-- API response schema validation
-- concurrency coverage for future transfer/transaction endpoints
 - test reporting and execution history beyond Jenkins' built-in test result view
