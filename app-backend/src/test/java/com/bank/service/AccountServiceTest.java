@@ -5,6 +5,7 @@ import com.bank.dto.account.UpdateAccountRequest;
 import com.bank.exception.AccountNotFoundException;
 import com.bank.exception.DuplicateEmailException;
 import com.bank.model.Account;
+import com.bank.model.Currency;
 import com.bank.repository.AccountRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,7 +38,8 @@ class AccountServiceTest {
         CreateAccountRequest request = new CreateAccountRequest(
                 "  John Doe  ",
                 "  John.Doe@Example.com  ",
-                new BigDecimal("100.50")
+                new BigDecimal("100.50"),
+                Currency.PLN
         );
 
         when(accountRepository.existsByEmail("john.doe@example.com")).thenReturn(false);
@@ -60,7 +62,8 @@ class AccountServiceTest {
         CreateAccountRequest request = new CreateAccountRequest(
                 "John Doe",
                 "John.Doe@Example.com",
-                new BigDecimal("100.50")
+                new BigDecimal("100.50"),
+                Currency.PLN
         );
 
         when(accountRepository.existsByEmail("john.doe@example.com")).thenReturn(true);
@@ -74,13 +77,12 @@ class AccountServiceTest {
 
     @Test
     void shouldUpdateAccount_WhenDataIsValid() {
-        Account existing = new Account("John Doe", "john@doe.xyz", new BigDecimal("100.00"));
+        Account existing = new Account("John Doe", "john@doe.xyz", new BigDecimal("100.00"), Currency.PLN);
         existing.setId(10L);
 
         UpdateAccountRequest request = new UpdateAccountRequest(
                 "  Jane Doe  ",
-                "  Jane@Doe.xyz  ",
-                new BigDecimal("250.75")
+                "  Jane@Doe.xyz  "
         );
 
         when(accountRepository.findById(10L)).thenReturn(Optional.of(existing));
@@ -91,18 +93,19 @@ class AccountServiceTest {
 
         assertThat(result.getOwnerName()).isEqualTo("Jane Doe");
         assertThat(result.getEmail()).isEqualTo("jane@doe.xyz");
-        assertThat(result.getBalance()).isEqualByComparingTo("250.75");
+        assertThat(result.getBalance())
+                .as("PUT no longer touches balance - only deposit/withdraw endpoints do")
+                .isEqualByComparingTo("100.00");
     }
 
     @Test
     void shouldThrowDuplicateEmailException_WhenUpdatingAccountWithAnotherAccountsEmail() {
-        Account existing = new Account("John Doe", "john@doe.xyz", new BigDecimal("100.00"));
+        Account existing = new Account("John Doe", "john@doe.xyz", new BigDecimal("100.00"), Currency.PLN);
         existing.setId(10L);
 
         UpdateAccountRequest request = new UpdateAccountRequest(
                 "Jane Doe",
-                "taken@doe.xyz",
-                new BigDecimal("250.75")
+                "taken@doe.xyz"
         );
 
         when(accountRepository.findById(10L)).thenReturn(Optional.of(existing));
@@ -117,7 +120,7 @@ class AccountServiceTest {
 
     @Test
     void shouldThrowDuplicateEmailException_WhenSaveRaceLosesToConcurrentInsert() {
-        CreateAccountRequest request = new CreateAccountRequest("John Doe", "john.doe@example.com", new BigDecimal("100.50"));
+        CreateAccountRequest request = new CreateAccountRequest("John Doe", "john.doe@example.com", new BigDecimal("100.50"), Currency.PLN);
 
         when(accountRepository.existsByEmail("john.doe@example.com")).thenReturn(false);
         when(accountRepository.saveAndFlush(any(Account.class))).thenThrow(
@@ -131,7 +134,7 @@ class AccountServiceTest {
 
     @Test
     void shouldRethrowOriginalException_WhenSaveFailsForUnrelatedConstraint() {
-        CreateAccountRequest request = new CreateAccountRequest("John Doe", "john.doe@example.com", new BigDecimal("100.50"));
+        CreateAccountRequest request = new CreateAccountRequest("John Doe", "john.doe@example.com", new BigDecimal("100.50"), Currency.PLN);
 
         DataIntegrityViolationException unrelatedViolation = new DataIntegrityViolationException("insert failed",
                 new RuntimeException("null value in column \"owner_name\" violates not-null constraint"));

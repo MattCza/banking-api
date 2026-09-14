@@ -33,7 +33,8 @@ public class AccountService {
         Account account = new Account(
                 request.ownerName().trim(),
                 normalizedEmail,
-                request.initialBalance());
+                request.initialBalance(),
+                request.currency());
 
         try {
             return accountRepository.saveAndFlush(account);
@@ -73,7 +74,6 @@ public class AccountService {
 
         account.setOwnerName(request.ownerName().trim());
         account.setEmail(normalizedEmail);
-        account.setBalance(request.balance());
 
         try {
             return accountRepository.saveAndFlush(account);

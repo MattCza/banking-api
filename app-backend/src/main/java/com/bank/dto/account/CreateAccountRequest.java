@@ -1,5 +1,6 @@
 package com.bank.dto.account;
 
+import com.bank.model.Currency;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -24,6 +25,9 @@ public record CreateAccountRequest(
         @NotNull(message = "Initial balance cannot be null")
         @PositiveOrZero(message = "Initial balance cannot be negative")
         @Digits(integer = 17, fraction = 2, message = "Initial balance must contain up to 17 integer digits and 2 decimal places")
-        BigDecimal initialBalance
+        BigDecimal initialBalance,
+
+        @NotNull(message = "Currency is required")
+        Currency currency
 ) {
 }

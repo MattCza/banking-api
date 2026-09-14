@@ -4,6 +4,7 @@ import com.bank.dto.account.AccountResponse;
 import com.bank.dto.account.CreateAccountRequest;
 import com.bank.dto.account.UpdateAccountRequest;
 import com.bank.model.Account;
+import com.bank.model.Money;
 import com.bank.service.AccountService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -31,7 +32,7 @@ public class AccountController {
                 createdAccount.getId(),
                 createdAccount.getOwnerName(),
                 createdAccount.getEmail(),
-                createdAccount.getBalance()
+                new Money(createdAccount.getBalance(), createdAccount.getCurrency())
         );
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -46,7 +47,7 @@ public class AccountController {
                 account.getId(),
                 account.getOwnerName(),
                 account.getEmail(),
-                account.getBalance()
+                new Money(account.getBalance(), account.getCurrency())
         );
 
         return ResponseEntity.ok(response);
@@ -70,7 +71,7 @@ public class AccountController {
                 updatedAccount.getId(),
                 updatedAccount.getOwnerName(),
                 updatedAccount.getEmail(),
-                updatedAccount.getBalance()
+                new Money(updatedAccount.getBalance(), updatedAccount.getCurrency())
         );
 
         return ResponseEntity.ok(response);

@@ -62,6 +62,28 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
+    @ExceptionHandler(com.bank.exception.CurrencyMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleCurrencyMismatchException(com.bank.exception.CurrencyMismatchException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                409,
+                "CONFLICT",
+                ex.getMessage(),
+                Map.of());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    @ExceptionHandler(com.bank.exception.InsufficientFundsException.class)
+    public ResponseEntity<ErrorResponse> handleInsufficientFundsException(com.bank.exception.InsufficientFundsException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                409,
+                "CONFLICT",
+                ex.getMessage(),
+                Map.of());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
         ErrorResponse errorResponse = new ErrorResponse(
