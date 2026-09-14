@@ -4,10 +4,8 @@ import com.bank.api.dto.Currency;
 
 import java.math.BigDecimal;
 
-public record CreateAccountRequest(
-        String ownerName,
-        String email,
-        BigDecimal initialBalance,
+public record TransactionRequest(
+        BigDecimal amount,
         Currency currency
 ) {
 }

@@ -1,11 +1,11 @@
 package com.bank.api.dto.response;
 
-import java.math.BigDecimal;
+import com.bank.api.dto.Money;
 
 public record AccountResponse(
         Long id,
         String ownerName,
         String email,
-        BigDecimal balance
+        Money money
 ) {
 }

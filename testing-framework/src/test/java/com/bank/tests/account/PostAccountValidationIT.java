@@ -7,6 +7,7 @@ import com.bank.api.assertions.ValidationAssertions;
 import com.bank.api.client.AccountClient;
 import com.bank.api.data.AccountDataFactory;
 import com.bank.api.dto.request.CreateAccountRequest;
+import com.bank.api.dto.Currency;
 import com.bank.api.dto.response.AccountResponse;
 import com.bank.api.dto.response.ErrorResponse;
 import io.restassured.response.Response;
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.math.BigDecimal;
@@ -183,5 +185,36 @@ class PostAccountValidationIT {
         }
     }
 
+    @Nested
+    @DisplayName("Currency validation")
+    class CurrencyValidation {
+
+        @Test
+        @DisplayName("Should return 400 when currency is null")
+        void shouldReturn400_WhenCurrencyIsNull() {
+            CreateAccountRequest request = AccountDataFactory.validCreateAccount().withCurrency(null).build();
+
+            Response response = accountClient.createAccount(request);
+            ResponseAssertions.assertStatus(response, 400);
+            ResponseAssertions.assertMatchesSchema(response, "schemas/error-response-schema.json");
+
+            ErrorResponse errorResponse = response.as(ErrorResponse.class);
+            ErrorAssertions.assertBadRequest(errorResponse);
+            ValidationAssertions.assertFieldErrors(errorResponse, "currency", "Currency is required");
+        }
+
+        @ParameterizedTest(name = "[{index}] {0}")
+        @EnumSource(Currency.class)
+        @DisplayName("Should create account for every supported currency")
+        void shouldCreateAccount_WhenCurrencyIsSupported(Currency currency) {
+            CreateAccountRequest request = AccountDataFactory.validCreateAccount().withCurrency(currency).build();
+
+            Response response = accountClient.createAccount(request);
+            ResponseAssertions.assertStatus(response, 201);
+
+            AccountResponse accountResponse = response.as(AccountResponse.class);
+            AccountAssertions.assertCreatedAccountResponse(accountResponse, request);
+        }
+    }
 
 }

@@ -24,8 +24,11 @@ public final class AccountAssertions {
         assertThat(actual.email())
                 .isEqualTo(expected.email().trim().toLowerCase(Locale.ROOT));
 
-        assertThat(actual.balance())
+        assertThat(actual.money().amount())
                 .isEqualByComparingTo(expected.initialBalance());
+
+        assertThat(actual.money().currency())
+                .isEqualTo(expected.currency());
     }
 
     public static void assertUpdatedAccountResponse(AccountResponse actual, UpdateAccountRequest expected, Long expectedId) {
@@ -38,9 +41,6 @@ public final class AccountAssertions {
 
         assertThat(actual.email())
                 .isEqualTo(expected.email().trim().toLowerCase(Locale.ROOT));
-
-        assertThat(actual.balance())
-                .isEqualByComparingTo(expected.balance());
     }
 
 

@@ -6,7 +6,7 @@ import com.bank.api.data.AccountDataFactory;
 import com.bank.api.dto.response.AccountResponse;
 import io.restassured.response.Response;
 
-abstract class BaseAccountIT {
+public abstract class BaseAccountIT {
 
     protected final AccountClient accountClient = new AccountClient();
 

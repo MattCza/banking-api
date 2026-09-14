@@ -33,6 +33,16 @@ public final class ErrorAssertions {
         assertThat(actual.validationErrors()).isEmpty();
     }
 
+    public static void assertCurrencyMismatch(ErrorResponse actual) {
+        assertError(actual, 409, "CONFLICT", "Currency mismatch");
+        assertThat(actual.validationErrors()).isEmpty();
+    }
+
+    public static void assertInsufficientFunds(ErrorResponse actual) {
+        assertError(actual, 409, "CONFLICT", "insufficient funds");
+        assertThat(actual.validationErrors()).isEmpty();
+    }
+
     public static void assertNotFound(ErrorResponse actual) {
         assertError(actual, 404, "NOT_FOUND","not found");
         assertThat(actual.validationErrors()).isEmpty();

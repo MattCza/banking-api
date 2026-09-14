@@ -14,7 +14,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.math.BigDecimal;
 import java.util.stream.Stream;
 
 @Tag("validation")
@@ -122,67 +121,6 @@ public class PutAccountValidationIT extends BaseAccountIT {
             AccountResponse accountResponse = updateResponse.as(AccountResponse.class);
             AccountAssertions.assertUpdatedAccountResponse(accountResponse, updateAccountRequest, id);
         }
-    }
-
-    @Nested
-    @DisplayName("Balance validation")
-    class BalanceValidation {
-
-        static Stream<Arguments> invalidBalances() {
-            return Stream.of(
-                    Arguments.of("null", null, new String[]{"Initial balance cannot be null"}),
-                    Arguments.of("negative", new BigDecimal("-1"),
-                            new String[]{"Initial balance cannot be negative"}),
-                    Arguments.of("more than 2 decimal places", new BigDecimal("100.123"),
-                            new String[]{"Initial balance must contain up to 17 integer digits and 2 decimal places"}),
-                    Arguments.of("more than 17 integer digits", new BigDecimal("123456789012345678.12"),
-                            new String[]{"Initial balance must contain up to 17 integer digits and 2 decimal places"})
-            );
-        }
-
-        @ParameterizedTest(name = "[{index}] {0}")
-        @MethodSource("invalidBalances")
-        @DisplayName("Should return 400 when balance is invalid")
-        void shouldReturn400_WhenBalanceIsInvalid(String description, BigDecimal balance, String[] expectedMessages) {
-            Long id = createAccountAndGetId();
-
-            UpdateAccountRequest updateAccountRequest = AccountDataFactory.validUpdateAccount().withBalance(balance).build();
-            Response updateResponse = accountClient.updateAccount(updateAccountRequest, id);
-            ResponseAssertions.assertStatus(updateResponse, 400);
-            ResponseAssertions.assertMatchesSchema(updateResponse, "schemas/error-response-schema.json");
-
-            ErrorResponse errorResponse = updateResponse.as(ErrorResponse.class);
-            ErrorAssertions.assertBadRequest(errorResponse);
-            ValidationAssertions.assertFieldErrors(errorResponse, "balance", expectedMessages);
-        }
-
-        @Test
-        @DisplayName("Should return 200 when balance is 0")
-        void shouldReturn200_WhenBalanceIsZero() {
-            Long id = createAccountAndGetId();
-
-            UpdateAccountRequest updateAccountRequest = AccountDataFactory.validUpdateAccount().withBalance(BigDecimal.ZERO).build();
-            Response updateResponse = accountClient.updateAccount(updateAccountRequest, id);
-            ResponseAssertions.assertStatus(updateResponse, 200);
-
-            AccountResponse accountResponse = updateResponse.as(AccountResponse.class);
-            AccountAssertions.assertUpdatedAccountResponse(accountResponse, updateAccountRequest, id);
-        }
-
-        @Test
-        @DisplayName("Should return 200 when balance contains the maximum allowed number of integer and fraction digits")
-        void shouldReturn200_WhenBalanceHasMaximumAllowedPrecision() {
-            Long id = createAccountAndGetId();
-
-            UpdateAccountRequest updateAccountRequest = AccountDataFactory.validUpdateAccount()
-                    .withBalance(new BigDecimal("12345678901234567.12")).build();
-            Response updateResponse = accountClient.updateAccount(updateAccountRequest, id);
-            ResponseAssertions.assertStatus(updateResponse, 200);
-
-            AccountResponse accountResponse = updateResponse.as(AccountResponse.class);
-            AccountAssertions.assertUpdatedAccountResponse(accountResponse, updateAccountRequest, id);
-        }
-
     }
 
 }
