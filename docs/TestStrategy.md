@@ -31,16 +31,29 @@ The main goals of the strategy are to:
 - API response contract validation via JSON Schema
 - authorization checks for protected endpoints
 - duplicate email and concurrency behavior
+- financial data integrity and account balance invariants
+- transaction state consistency
+
+
+### Financial Data Integrity
+
+The test suite verifies that:
+
+- account balances cannot become negative
+- successful deposits and withdrawals produce the expected balance
+- rejected transactions do not modify the account balance
+- transactions are performed using the account's currency
+- concurrent transactions preserve balance integrity
 
 
 ## 3. Test Levels
 
-| Test Level            | Current Status                         |
-|-----------------------|----------------------------------------|
-| Unit Tests            | Implemented for selected service logic |
-| API Integration Tests | Implemented                            |
-| End-to-End Tests      | Planned                                |
-| Performance Tests     | Planned                                |
+| Test Level            | Current Status                                    |
+|-----------------------|---------------------------------------------------|
+| Unit Tests            | Implemented for selected domain and service logic |
+| API Integration Tests | Implemented                                       |
+| End-to-End Tests      | Planned                                           |
+| Performance Tests     | Planned                                           |
 
 The primary focus of the project is API integration testing.  
 Unit tests are used to protect core service logic and edge cases at lower cost, 
@@ -58,6 +71,7 @@ The suite combines:
 - regression testing
 - API contract testing
 - concurrency testing for high-risk scenarios
+- data integrity testing
 
 
 ## 5. Test Design Approach
@@ -72,6 +86,20 @@ The following design techniques are used:
 - business-rule verification for duplicate data and not-found conditions
 
 Tests are written using a consistent Arrange-Act-Assert structure and named with business intent in mind.
+
+## 5a. Risk Prioritization
+
+Testing priority is based on business and technical risk.
+
+| Risk Area                        | Priority | Rationale                                                             |
+|----------------------------------|----------|-----------------------------------------------------------------------|
+| Authentication and authorization | Critical | Unauthorized access could expose or modify protected resources        |
+| Account balance integrity        | Critical | Financial state must remain correct under all transaction outcomes    |
+| Concurrent transactions          | Critical | Race conditions could result in incorrect balances                    |
+| Input validation                 | High     | Invalid financial data must not enter the domain                      |
+| API error and response contracts | High     | Clients depend on stable API behavior                                 |
+| Account lifecycle                | High     | Create, update, and delete operations affect persistent business data |
+
 
 ## 6. Functional Areas Covered
 
@@ -119,7 +147,7 @@ Covered areas:
 - update with unchanged email
 - conflict when email belongs to another account
 - duplicate email under parallel requests
-- validation of owner name, email, and balance
+- validation of owner name and email
 - role-based access control (only ADMIN may update accounts)
 
 `DELETE /api/v1/accounts/{id}`
@@ -159,10 +187,37 @@ This allows the same test suite be sliced in two independent ways:
 by content (`-Dgroups=security`) or by how urgently it needs to run (`-Dgroups=smoke`). No test duplication or package restructuring is required.
 
 
+## 6b. Authorization Model
+
+The API uses two roles: `ADMIN` and `USER`.
+
+Authorization is role-based and does not include per-account ownership.
+A `USER` can read any account but cannot modify or delete accounts or perform
+financial transactions. An `ADMIN` has full access to account management and
+transaction operations.
+
+The complete authorization model is summarized below. Individual scenarios
+behind each permission are covered by endpoint-specific tests documented in
+`docs/TestCoverage.md` and implemented in the corresponding `*SecurityIT`
+classes.
+
+| Endpoint                              | `Unauthenticated` | `USER` | `ADMIN` | Covered by                 |
+|---------------------------------------|-------------------|--------|---------|----------------------------|
+| `POST /api/v1/auth/login`             | 200               | 200    | 200     | `LoginIT`                  |
+| `GET /api/v1/accounts/{id}`           | 401               | 200    | 200     | `GetAccountSecurityIT`     |
+| `POST /api/v1/accounts`               | 401               | 403    | 201     | `PostAccountSecurityIT`    |
+| `PUT /api/v1/accounts/{id}`           | 401               | 403    | 200     | `PutAccountSecurityIT`     |
+| `DELETE /api/v1/accounts/{id}`        | 401               | 403    | 204     | `DeleteAccountSecurityIT`  |
+| `POST /api/v1/accounts/{id}/deposit`  | 401               | 403    | 201     | `PostDepositSecurityIT`    |
+| `POST /api/v1/accounts/{id}/withdraw` | 401               | 403    | 201     | `PostWithdrawalSecurityIT` |
+
+
 ## 7. Test Data Strategy
 
-The framework relies primarily on dynamically generated test data. Each test run creates new, unique data at runtime, allowing the same test suite to be executed consistently across different environments without relying on pre-existing data or configuration.
-
+The framework relies primarily on dynamically generated test data. Test data is
+created at runtime, with unique values used where required to avoid collisions
+between test runs. This allows the same test suite to be executed consistently
+across different environments without depending on pre-existing business data.
 
 ### Static Data
 
@@ -206,17 +261,18 @@ mvn -pl testing-framework -am verify -Denv=local
 
 ### Exit Criteria
 
-- all automated checks pass
+- all required tests for the selected execution tier pass
 - no unexpected 5xx responses appear
 - error contracts remain consistent
-- protected endpoints enforce authentication as expected
+- protected endpoints enforce authentication and authorization as expected
+- no critical or high-severity defects remain unresolved for the tested scope
 
 ## 10. CI Execution
 
 The project includes Jenkins-based CI for running the API test suite, split into two sequential stages:
 
 1. **Smoke Tests** (`-Dgroups=smoke`) – a small, fast subset covering one happy path per resource. If this stage fails, the pipeline stops immediately.
-2. **Regression Tests** (`-DexcludedGroups=smoke`) – the full validation, security, and concurrency suite, run only after smoke passes.
+2. **Regression Tests** (`-DexcludedGroups=smoke`) – the remaining automated functional, validation, security, and concurrency tests.
 
 The repository also includes a GitHub Actions workflow for fast verification of the build and unit tests on GitHub.
 
