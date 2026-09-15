@@ -7,6 +7,7 @@ import com.bank.api.client.TransactionClient;
 import com.bank.api.data.TransactionDataFactory;
 import com.bank.api.dto.Currency;
 import com.bank.api.dto.request.TransactionRequest;
+import com.bank.api.dto.response.AccountResponse;
 import com.bank.api.dto.response.ErrorResponse;
 import com.bank.tests.account.BaseAccountIT;
 import io.restassured.response.Response;
@@ -19,6 +20,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.math.BigDecimal;
 import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Tag("validation")
 public class PostDepositValidationIT extends BaseAccountIT {
@@ -71,6 +74,8 @@ public class PostDepositValidationIT extends BaseAccountIT {
     @DisplayName("Should return 409 when deposit currency differs from the account's currency")
     void shouldReturn409_WhenCurrencyDoesNotMatchAccount() {
         Long accountId = createAccountAndGetId();
+        BigDecimal balanceBefore = currentBalance(accountId);
+
         TransactionRequest request = TransactionDataFactory.validDeposit().withCurrency(Currency.USD).build();
 
         Response response = transactionClient.deposit(request, accountId);
@@ -79,5 +84,13 @@ public class PostDepositValidationIT extends BaseAccountIT {
 
         ErrorResponse errorResponse = response.as(ErrorResponse.class);
         ErrorAssertions.assertCurrencyMismatch(errorResponse);
+
+        assertThat(currentBalance(accountId))
+                .as("a failed deposit must not mutate the account balance")
+                .isEqualByComparingTo(balanceBefore);
+    }
+
+    private BigDecimal currentBalance(Long accountId) {
+        return accountClient.getAccountById(accountId).as(AccountResponse.class).money().amount();
     }
 }

@@ -35,8 +35,8 @@ public class PostWithdrawalConcurrencyIT {
     @Test
     @DisplayName("Should never let parallel withdrawals push the balance negative")
     void shouldNotOverdraw_WhenWithdrawalsRunInParallel() throws Exception {
-        int numberOfRequests = 5;
-        BigDecimal startingBalance = new BigDecimal("100.00");
+        int numberOfRequests = 10;
+        BigDecimal startingBalance = new BigDecimal("200.00");
         BigDecimal withdrawalAmount = new BigDecimal("30.00");
 
         String token = authClient.loginAndGetToken(LoginDataFactory.validAdmin());
