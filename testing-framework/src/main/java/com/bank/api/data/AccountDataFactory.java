@@ -17,7 +17,9 @@ public final class AccountDataFactory {
         return new UpdateAccountRequestBuilder();
     }
 
-
+    public static String randomEmail() {
+        return FAKER.internet().emailAddress();
+    }
 
     public static String emailWithLength(int length) {
         if (length < 6) {

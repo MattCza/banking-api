@@ -116,7 +116,7 @@ class PostAccountValidationIT {
 
         static Stream<Arguments> validEmails() {
             return Stream.of(
-                    Arguments.of("valid format", "john.doe@example.com"),
+                    Arguments.of("valid format", AccountDataFactory.randomEmail()),
                     Arguments.of("max length - 254 chars", AccountDataFactory.emailWithLength(254))
             );
         }
